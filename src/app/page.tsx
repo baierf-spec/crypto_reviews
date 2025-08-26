@@ -36,7 +36,6 @@ export default function HomePage() {
           </div>
           <Suspense fallback={<ReviewsSkeleton />}>
             {/* Server component list for latest professional reviews */}
-            {/* @ts-expect-error Async Server Component */}
             <LatestProfessionalReviews />
           </Suspense>
         </div>
