@@ -62,6 +62,44 @@ export async function buildAnalysisFromCoin(coin: Coin) {
     }
   }
 
+  // --- Heuristic price predictions (lightweight model) ---
+  const currentPrice = coin.current_price
+  const normalize = (n: number, min: number, max: number) => (n - min) / (max - min)
+  const sentimentFactor = (sentimentData.overall_score || 0) / 100 // -1..1
+  const onchainFactor = normalize(onChainData.network_growth || 50, 0, 100) - 0.5 // -0.5..0.5
+  const ecoFactor = (ecoRating - 5) / 10 // roughly -0.5..0.5
+
+  // base move expectations per horizon
+  const baseShort = 0.02 // 2%
+  const baseMedium = 0.05 // 5%
+  const baseLong = 0.10 // 10%
+
+  // combine signals (bounded)
+  const signal = Math.max(-1, Math.min(1, sentimentFactor * 0.6 + onchainFactor * 0.3 + ecoFactor * 0.1))
+
+  const pctShort = baseShort * (1 + signal)
+  const pctMedium = baseMedium * (1 + signal)
+  const pctLong = baseLong * (1 + signal)
+
+  const pred = (pct: number) => {
+    const target = currentPrice * (1 + pct)
+    const band = pct * 0.5
+    return {
+      pct: Math.round(pct * 10000) / 100, // to % with 2 decimals
+      target,
+      low: currentPrice * (1 + pct - band),
+      high: currentPrice * (1 + pct + band),
+    }
+  }
+
+  const pricePrediction = {
+    short_term: pred(pctShort),
+    medium_term: pred(pctMedium),
+    long_term: pred(pctLong),
+    confidence: Math.round((Math.abs(signal) * 0.6 + 0.4) * 100) / 100,
+    currency: 'USD',
+  }
+
   return {
     id: `analysis_${Date.now()}`,
     coin_id: coin.id,
@@ -75,11 +113,7 @@ export async function buildAnalysisFromCoin(coin: Coin) {
       eco: ecoRating,
       overall: overallRating,
     },
-    price_prediction: {
-      short_term: 'Analysis includes short-term prediction',
-      medium_term: 'Analysis includes medium-term prediction',
-      long_term: 'Analysis includes long-term prediction',
-    },
+    price_prediction: pricePrediction,
     on_chain_data: onChainData,
     social_sentiment: sentimentData,
   }

@@ -173,18 +173,24 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
           <div className="bg-crypto-secondary/50 rounded-lg p-6">
             <h3 className="text-xl font-bold text-white mb-4">Price Predictions</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-crypto-primary/20 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-white mb-2">Short Term (1 Week)</h4>
-                <p className="text-gray-300">{analysis.price_prediction.short_term}</p>
-              </div>
-              <div className="bg-crypto-primary/20 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-white mb-2">Medium Term (1 Month)</h4>
-                <p className="text-gray-300">{analysis.price_prediction.medium_term}</p>
-              </div>
-              <div className="bg-crypto-primary/20 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-white mb-2">Long Term (3 Months)</h4>
-                <p className="text-gray-300">{analysis.price_prediction.long_term}</p>
-              </div>
+              {(['short_term','medium_term','long_term'] as const).map((key, idx) => {
+                const label = idx === 0 ? 'Short Term (1 Week)' : idx === 1 ? 'Medium Term (1 Month)' : 'Long Term (3 Months)'
+                const p = (analysis.price_prediction as any)[key]
+                return (
+                  <div key={key} className="bg-crypto-primary/20 rounded-lg p-4">
+                    <h4 className="text-lg font-semibold text-white mb-2">{label}</h4>
+                    {p && typeof p === 'object' ? (
+                      <div className="text-gray-300 text-sm space-y-1">
+                        <div>Target: <span className="text-white font-semibold">${'{'}p.target.toFixed(2){'}'}</span> {analysis.price_prediction.currency || 'USD'}</div>
+                        <div>Range: <span className="text-white font-semibold">${'{'}p.low.toFixed(2){'}'}</span> - <span className="text-white font-semibold">${'{'}p.high.toFixed(2){'}'}</span></div>
+                        <div>Change: <span className={`${'${'}p.pct >= 0 ? 'text-green-400' : 'text-red-400'{' }'}`}>{'${'}p.pct{'}'}%</span></div>
+                      </div>
+                    ) : (
+                      <p className="text-gray-300">Prediction unavailable</p>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
 

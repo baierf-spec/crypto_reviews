@@ -110,7 +110,7 @@ export default function RequestReviewForm({ coin }: RequestReviewFormProps) {
   }
 
   return (
-    <div className="bg-crypto-secondary/50 rounded-lg p-8">
+    <div id="request-plans" className="bg-crypto-secondary/50 rounded-lg p-8">
       <div className="text-center mb-8">
         <Sparkles className="w-16 h-16 text-crypto-accent mx-auto mb-4" />
         <h2 className="text-3xl font-bold text-white mb-2">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Clock, RefreshCw, Sparkles, AlertCircle } from 'lucide-react'
 import { getTimeAgo } from '@/lib/utils'
 import Link from 'next/link'
@@ -14,13 +14,19 @@ interface LastReviewedInfoProps {
 
 export default function LastReviewedInfo({ coinId, coinName, lastReviewed, hasAnalysis }: LastReviewedInfoProps) {
   const [isRequesting, setIsRequesting] = useState(false)
+  const plansRef = useRef<HTMLDivElement | null>(null)
 
   const handleRequestNewReview = async () => {
     setIsRequesting(true)
-    
     try {
-      // Redirect to the review page where user can choose fast or queue option
-      window.location.href = `/reviews/${coinId}`
+      // Smooth scroll to the request plans section on the same page
+      const el = document.getElementById('request-plans')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } else {
+        // Fallback: redirect to anchor
+        window.location.href = `/reviews/${coinId}#request-plans`
+      }
     } catch (error) {
       console.error('Error requesting new review:', error)
     } finally {
