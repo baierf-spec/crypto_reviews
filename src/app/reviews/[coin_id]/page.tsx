@@ -7,6 +7,8 @@ import { getAnalysisByCoinId } from '@/lib/supabase'
 import PriceChart from '@/components/PriceChart'
 import RatingStars from '@/components/RatingStars'
 import RequestReviewForm from '@/components/RequestReviewForm'
+import AnalysisMarkdown from '@/components/AnalysisMarkdown'
+import AdvancedAnalysisTabs from '@/components/AdvancedAnalysisTabs'
 import { calculateOverallRating, formatPercentage, formatPrice, truncateText } from '@/lib/utils'
 
 interface PageProps {
@@ -112,51 +114,16 @@ export default async function CoinReviewPage({ params }: PageProps) {
                 </Suspense>
               </div>
 
-              {/* AI Analysis */}
-              <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
-                <h3 className="text-lg font-semibold text-white mb-3">AI Analysis</h3>
-                <p className="text-gray-300 text-sm mb-3">{summary}</p>
-                <div className="flex items-center mb-4">
-                  <RatingStars rating={stars} size="md" />
+              {/* Advanced tabs section */}
+              <AdvancedAnalysisTabs coin={coin} analysis={analysis || null} />
+
+              {/* Full Markdown content */}
+              {analysis && (
+                <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
+                  <h3 className="text-lg font-semibold text-white mb-3">Full Analysis</h3>
+                  <AnalysisMarkdown content={analysis.content || 'Analysis content is not available yet.'} />
                 </div>
-
-                {/* Metrics */}
-                <div className="space-y-4">
-                  {/* Sentiment */}
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-                      <span>Sentiment</span>
-                      <span>{sentiment}</span>
-                    </div>
-                    <div className="h-2 rounded bg-white/10 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500"
-                        style={{ width: `${Math.max(0, Math.min(100, (sentiment + 100) / 2))}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* On-Chain */}
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-                      <span>On-Chain</span>
-                      <span>{(onChainPercent / 10).toFixed(1)}/10</span>
-                    </div>
-                    <div className="h-2 rounded bg-white/10 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-400 to-blue-600"
-                        style={{ width: `${Math.max(0, Math.min(100, onChainPercent))}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Eco */}
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400">Eco Rating</span>
-                    <EcoBadge value={ecoValue} />
-                  </div>
-                </div>
-              </div>
+              )}
 
               {/* Inline Request form anchor */}
               <div id="request-review" className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">

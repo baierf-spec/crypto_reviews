@@ -41,6 +41,11 @@ Structure (use these headings exactly):
 9. Risks
 10. Bottom Line
 
+Additionally include a short appendix with:
+- Technical Analysis snapshot: RSI(14), MACD(12,26,9), 50/200-day MAs, Bollinger Bands context.
+- Sentiment & Social: aggregated score (−100..100), breakdown (positive/neutral/negative %), top hashtags and mentions.
+- Price Prediction scenarios: Bullish/Neutral/Bearish with percentage change targets and probabilities for 1 week and 1 month.
+
 Facts you must use:
 - Current Price: $${coin.current_price}
 - Market Cap: $${coin.market_cap.toLocaleString()}
