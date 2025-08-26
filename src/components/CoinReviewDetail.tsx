@@ -7,6 +7,7 @@ import { Coin, Analysis } from '@/types'
 import RatingStars from './RatingStars'
 import EcoGauge from './EcoGauge'
 import LastReviewedInfo from './LastReviewedInfo'
+import AnalysisMarkdown from './AnalysisMarkdown'
 import dynamic from 'next/dynamic'
 
 const PriceChart = dynamic(() => import('./PriceChart'), { ssr: false })
@@ -165,9 +166,7 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
               <Info className="w-4 h-4 text-crypto-accent" />
               <span>AI-generated content for educational purposes only. Not financial advice.</span>
             </div>
-            <article className="prose prose-invert max-w-none prose-headings:text-white prose-p:text-gray-200 prose-strong:text-white">
-              <div dangerouslySetInnerHTML={{ __html: analysis.content.replace(/\n/g, '<br/>') }} />
-            </article>
+            <AnalysisMarkdown content={analysis.content} />
           </div>
 
           {/* Price Predictions */}

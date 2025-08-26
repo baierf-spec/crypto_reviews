@@ -7,6 +7,7 @@ export async function GET() {
     hasOpenAIKey: Boolean(process.env.OPENAI_API_KEY),
     hasSupabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
     hasSupabaseKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+    hasServiceRole: Boolean(process.env.SUPABASE_SERVICE_ROLE),
     appUrl: process.env.NEXT_PUBLIC_APP_URL || null
   })
 }

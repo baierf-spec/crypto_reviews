@@ -19,9 +19,9 @@ export default function RatingStars({
   className
 }: RatingStarsProps) {
   const sizeClasses = {
-    sm: 'w-3 h-3',
-    md: 'w-4 h-4',
-    lg: 'w-5 h-5'
+    sm: 'w-4 h-4',
+    md: 'w-5 h-5',
+    lg: 'w-6 h-6'
   }
 
   const stars = []
@@ -77,12 +77,12 @@ export default function RatingStars({
   }
 
   return (
-    <div className={cn('flex items-center space-x-1', className)}>
-      <div className="flex">
+    <div className={cn('flex items-center space-x-2', className)}>
+      <div className="flex overflow-hidden max-w-full">
         {stars}
       </div>
       {showValue && (
-        <span className="text-sm text-gray-400 ml-1">
+        <span className="text-sm text-gray-300 tabular-nums">
           {rating.toFixed(1)}
         </span>
       )}

@@ -4,8 +4,19 @@ import { getAnalysisFromMemory, getAllAnalysesFromMemory } from './analyses'
 // Initialize Supabase client with fallback URLs
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co'
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key'
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE || ''
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
+
+function isServer() {
+  return typeof window === 'undefined'
+}
+
+function getServerClient() {
+  // Prefer service role on the server when available for writes/reads
+  const keyToUse = serviceRoleKey && isServer() ? serviceRoleKey : supabaseKey
+  return createClient(supabaseUrl, keyToUse)
+}
 
 export async function getLatestAnalyses(limit = 10) {
   try {
@@ -29,7 +40,8 @@ export async function getLatestAnalyses(limit = 10) {
 
 export async function getAnalysisByCoinId(coin_id: string) {
   try {
-    const { data, error } = await supabase
+    const client = getServerClient()
+    const { data, error } = await client
       .from('analyses')
       .select('*')
       .eq('coin_id', coin_id)
@@ -62,7 +74,8 @@ export async function getCoinQueue() {
 
 export async function updateCoinAnalysisDate(coin_id: string) {
   try {
-    const { error } = await supabase
+    const client = getServerClient()
+    const { error } = await client
       .from('coin_queue')
       .update({ last_analyzed_date: new Date().toISOString() })
       .eq('coin_id', coin_id)
@@ -77,7 +90,8 @@ export async function updateCoinAnalysisDate(coin_id: string) {
 
 export async function saveAnalysis(analysis: any) {
   try {
-    const { error } = await supabase
+    const client = getServerClient()
+    const { error } = await client
       .from('analyses')
       .insert([analysis])
 
@@ -91,7 +105,8 @@ export async function saveAnalysis(analysis: any) {
 
 export async function addCoinToQueue({ coin_id, priority = 1 }: { coin_id: string; priority?: number }) {
   try {
-    const { error } = await supabase
+    const client = getServerClient()
+    const { error } = await client
       .from('coin_queue')
       .insert([{
         coin_id,
