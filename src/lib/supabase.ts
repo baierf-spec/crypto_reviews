@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { getAnalysisFromMemory } from './analyses'
+import { getAnalysisFromMemory, getAllAnalysesFromMemory } from './analyses'
 
 // Initialize Supabase client with fallback URLs
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co'
@@ -19,9 +19,11 @@ export async function getLatestAnalyses(limit = 10) {
     return data || []
   } catch (error) {
     console.log('Supabase getLatestAnalyses failed:', error)
-    // Fallback to memory storage
-    const memoryAnalyses = getAnalysisFromMemory('bitcoin') // This is a simplified fallback
-    return memoryAnalyses ? [memoryAnalyses] : []
+    // Fallback to memory storage: return all available analyses sorted by date
+    const all = getAllAnalysesFromMemory()
+    return all
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, limit)
   }
 }
 
