@@ -37,7 +37,8 @@ export function formatMarketCap(marketCap?: number | null): string {
   }
 }
 
-export function formatPercentage(percentage: number): string {
+export function formatPercentage(percentage?: number | null): string {
+  if (percentage === undefined || percentage === null || Number.isNaN(percentage)) return '0.00%'
   const sign = percentage >= 0 ? '+' : ''
   return `${sign}${percentage.toFixed(2)}%`
 }
