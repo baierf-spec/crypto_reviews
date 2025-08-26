@@ -38,3 +38,11 @@ next-env.d.ts
 .env.*
 .next/
 .next/
+
+node_modules/
+.next/
+.env
+.env.*
+.DS_Store
+.vercel/
+*.log
