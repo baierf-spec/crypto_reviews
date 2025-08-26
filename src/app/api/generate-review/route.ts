@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
-import { calculateOverallRating } from '@/lib/utils'
-import { getOnChainData, getEcoData, getSocialSentiment } from '@/lib/apis'
+import { buildAnalysisFromCoin } from '@/lib/analysisGenerator'
+import { getCoinData } from '@/lib/apis'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-const hasOpenAIKey = Boolean(process.env.OPENAI_API_KEY)
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,112 +16,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Fetch additional data
-    const [onChainData, ecoRating, sentimentData] = await Promise.all([
-      getOnChainData(coin_id),
-      getEcoData(coin_id),
-      getSocialSentiment(coin_id)
-    ])
+    // Ensure we have the full coin object even if only fields provided
+    const coin = coin_id && (!current_price || !market_cap)
+      ? await getCoinData(coin_id)
+      : {
+          id: coin_id,
+          name: coin_name,
+          symbol: coin_symbol,
+          current_price,
+          market_cap,
+          price_change_percentage_24h,
+        }
 
-    // Calculate overall rating
-    const overallRating = calculateOverallRating(
-      sentimentData.overall_score,
-      onChainData.network_growth,
-      ecoRating
-    )
-
-    // Generate AI content (mock if no OPENAI_API_KEY)
-    const prompt = `Analyze ${coin_name} (${coin_symbol}) cryptocurrency:
-
-Current Price: $${current_price}
-Market Cap: $${market_cap.toLocaleString()}
-24h Change: ${price_change_24h}%
-
-On-Chain Data:
-- 24h Transactions: ${onChainData.transactions_24h.toLocaleString()}
-- Whale Activity: ${onChainData.whale_activity}
-- Network Growth: ${onChainData.network_growth}%
-
-Social Sentiment:
-- Twitter Score: ${sentimentData.twitter_score}
-- Reddit Score: ${sentimentData.reddit_score}
-- Overall Sentiment: ${sentimentData.overall_score}
-
-Environmental Rating: ${ecoRating}/10
-
-Please provide a comprehensive 1000-word analysis including:
-1. Current market position and recent performance
-2. Technical analysis and key support/resistance levels
-3. On-chain activity analysis and what it indicates
-4. Social sentiment analysis and community sentiment
-5. Environmental impact assessment
-6. Price predictions for short-term (1 week), medium-term (1 month), and long-term (3 months)
-7. Risk assessment and investment considerations
-8. Overall rating and recommendation
-
-Make it engaging, informative, and SEO-friendly. Include specific data points and actionable insights.`
-
-    let content: string
-    if (!hasOpenAIKey) {
-      content = `Mock Analysis for ${coin_name} (${coin_symbol})\n\n` +
-        `Price: $${current_price}. Market cap: $${market_cap.toLocaleString()}. 24h change: ${price_change_24h}%.\n` +
-        `On-chain: ${onChainData.network_growth}% growth, whale activity ${onChainData.whale_activity}, ` +
-        `${onChainData.transactions_24h.toLocaleString()} tx in 24h.\n` +
-        `Sentiment: overall ${sentimentData.overall_score} (Twitter ${sentimentData.twitter_score}, Reddit ${sentimentData.reddit_score}).\n\n` +
-        `Short-term outlook: Consolidation with volatility around recent levels.\n` +
-        `Medium-term: Trend depends on liquidity and macro catalysts.\n` +
-        `Long-term: Adoption and network effects remain key drivers.\n\n` +
-        `This is placeholder content for demo purposes (no OpenAI key set).`
-    } else {
-      try {
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: "You are a professional cryptocurrency analyst with expertise in blockchain technology, market analysis, and AI-powered insights. Provide comprehensive, accurate, and engaging analysis."
-            },
-            {
-              role: "user",
-              content: prompt
-            }
-          ],
-          max_tokens: 2000,
-          temperature: 0.7,
-        })
-
-        content = completion.choices[0]?.message?.content || 'Analysis generation failed.'
-      } catch (openAiError) {
-        console.error('OpenAI call failed, falling back to mock:', openAiError)
-        content = `Mock Analysis for ${coin_name} (${coin_symbol}) — OpenAI call failed.\n\n` +
-          `Price: $${current_price}. Market cap: $${market_cap.toLocaleString()}. 24h change: ${price_change_24h}%.\n` +
-          `On-chain: ${onChainData.network_growth}% growth, whale activity ${onChainData.whale_activity}.\n` +
-          `Sentiment overall: ${sentimentData.overall_score}.`
-      }
+    if (!coin) {
+      return NextResponse.json({ error: 'Coin not found' }, { status: 404 })
     }
 
-    // Create analysis object
-    const analysis = {
-      id: `analysis_${Date.now()}`,
-      coin_id,
-      coin_name,
-      coin_symbol,
-      content,
-      date: new Date().toISOString(),
-      ratings: {
-        sentiment: sentimentData.overall_score,
-        onChain: onChainData.network_growth,
-        eco: ecoRating,
-        overall: overallRating
-      },
-      price_prediction: {
-        short_term: "Analysis includes short-term prediction",
-        medium_term: "Analysis includes medium-term prediction", 
-        long_term: "Analysis includes long-term prediction"
-      },
-      on_chain_data: onChainData,
-      social_sentiment: sentimentData
-    }
+    const analysis = await buildAnalysisFromCoin(coin as any)
 
     return NextResponse.json({
       success: true,

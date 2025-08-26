@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCoinData } from '@/lib/apis'
 import { saveAnalysis } from '@/lib/supabase'
 import { saveAnalysisToMemory } from '@/lib/analyses'
+import { buildAnalysisFromCoin } from '@/lib/analysisGenerator'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,56 +28,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Determine base URL from the incoming request (avoids localhost on Vercel)
-    const { origin } = new URL(request.url)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || origin
-
-    // Generate analysis immediately
-    const analysisResponse = await fetch(`${baseUrl}/api/generate-review`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        coin_id: coin.id,
-        coin_name: coin.name,
-        coin_symbol: coin.symbol,
-        current_price: coin.current_price,
-        market_cap: coin.market_cap,
-        price_change_24h: coin.price_change_percentage_24h,
-      }),
-    })
-
-    if (!analysisResponse.ok) {
-      const errorData = await analysisResponse.json()
-      console.error('Analysis generation failed:', errorData)
-      return NextResponse.json(
-        { error: 'Failed to generate analysis' },
-        { status: 500 }
-      )
-    }
-
-    const analysisData = await analysisResponse.json()
-    
-    if (!analysisData.success || !analysisData.data) {
-      console.error('Invalid analysis response:', analysisData)
-      return NextResponse.json(
-        { error: 'Analysis generation failed' },
-        { status: 500 }
-      )
-    }
+    // Generate analysis directly (no internal HTTP)
+    const analysis = await buildAnalysisFromCoin(coin)
 
     // Save to database
     try {
-      await saveAnalysis(analysisData.data)
-      console.log('Analysis saved to Supabase:', analysisData.data.id)
+      await saveAnalysis(analysis)
+      console.log('Analysis saved to Supabase:', analysis.id)
     } catch (supabaseError) {
       console.log('Supabase save failed:', supabaseError)
     }
 
     // Always save to memory as backup
-    saveAnalysisToMemory(analysisData.data)
-    console.log('Analysis saved to memory:', analysisData.data.id)
+    saveAnalysisToMemory(analysis)
+    console.log('Analysis saved to memory:', analysis.id)
 
     // Log the request
     if (user_email) {
@@ -87,10 +54,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: `AI analysis for ${coin_name} generated successfully!`,
       coin_id,
-      analysis_id: analysisData.data.id,
+      analysis_id: analysis.id,
       generated_at: new Date().toISOString(),
       note: 'Your analysis is now live and ready to view!',
-      analysis: analysisData.data // Include the full analysis in response
+      analysis // Include the full analysis in response
     })
 
   } catch (error) {
