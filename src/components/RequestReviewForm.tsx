@@ -38,16 +38,24 @@ export default function RequestReviewForm({ coin }: RequestReviewFormProps) {
         }),
       })
 
-      const data = await response.json()
+      let data: any = null
+      const contentType = response.headers.get('content-type') || ''
+      if (contentType.includes('application/json')) {
+        try {
+          data = await response.json()
+        } catch (_) {
+          // ignore JSON parse errors; treat as generic failure
+        }
+      }
 
       if (response.ok) {
         setIsRequested(true)
-        if (data.analysis_id) {
+        if (data && data.analysis_id) {
           setAnalysisId(data.analysis_id)
         }
         console.log('Review request successful:', data)
       } else {
-        setError(data.error || 'Failed to request review. Please try again.')
+        setError((data && data.error) || 'Failed to request review. Please try again.')
         console.error('Review request failed:', data)
       }
     } catch (error) {
