@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Database, 
   TrendingUp, 
@@ -26,7 +26,7 @@ export default function AdminPage() {
   })
 
   // Load stats on mount
-  React.useEffect(() => {
+  useEffect(() => {
     let isMounted = true
     async function loadStats() {
       try {
