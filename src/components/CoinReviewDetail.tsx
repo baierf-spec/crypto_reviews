@@ -23,6 +23,17 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
   const [voteCount, setVoteCount] = useState({ up: 42, down: 8 })
   const [showMetricHelp, setShowMetricHelp] = useState(false)
 
+  // Normalize ratings to 0..5 stars for sub-metrics to ensure stable rendering
+  const sentimentStars = analysis
+    ? Math.max(0, Math.min(5, (analysis.ratings.sentiment + 100) / 200 * 5))
+    : 0
+  const onChainStars = analysis
+    ? Math.max(0, Math.min(5, (analysis.ratings.onChain || 0) / 20))
+    : 0
+  const ecoStars = analysis
+    ? Math.max(0, Math.min(5, (analysis.ratings.eco || 0) / 2))
+    : 0
+
   const handleVote = async (vote: 'up' | 'down') => {
     if (userVote === vote) {
       // Remove vote
@@ -161,14 +172,14 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-black/20 rounded-lg p-4 text-center border border-white/5">
                 <p className="text-gray-400 mb-2">Sentiment</p>
-                <RatingStars rating={analysis.ratings.sentiment} size="lg" showValue />
+                <RatingStars rating={sentimentStars} size="lg" showValue />
                 <p className={`text-sm mt-1 ${getSentimentColor(analysis.ratings.sentiment)}`}>
                   {analysis.ratings.sentiment >= 4 ? 'Bullish' : analysis.ratings.sentiment >= 2 ? 'Neutral' : 'Bearish'}
                 </p>
               </div>
               <div className="bg-black/20 rounded-lg p-4 text-center border border-white/5">
                 <p className="text-gray-400 mb-2">On-Chain</p>
-                <RatingStars rating={analysis.ratings.onChain} size="lg" showValue />
+                <RatingStars rating={onChainStars} size="lg" showValue />
               </div>
               <div className="bg-black/20 rounded-lg p-4 text-center flex flex-col items-center border border-white/5">
                 <p className="text-gray-400 mb-2">Eco</p>

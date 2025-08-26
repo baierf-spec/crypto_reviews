@@ -17,9 +17,10 @@ ChartJS.register(CategoryScale, LineElement, PointElement, LinearScale, Tooltip,
 
 interface PriceChartProps {
   coinId: string
+  heightClass?: string
 }
 
-export default function PriceChart({ coinId }: PriceChartProps) {
+export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartProps) {
   const [series, setSeries] = useState<number[][] | null>(null)
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function PriceChart({ coinId }: PriceChartProps) {
   const dataPoints = series.map(([, price]) => price)
 
   return (
-    <div className="h-64">
+    <div className={heightClass}>
       <Line
         data={{
           labels,

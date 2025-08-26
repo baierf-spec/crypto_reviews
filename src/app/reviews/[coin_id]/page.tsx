@@ -1,16 +1,21 @@
 import { Suspense } from 'react'
-import { getCoinData } from '@/lib/apis'
-import { getAnalysisByCoinId } from '@/lib/supabase'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import CoinReviewDetail from '@/components/CoinReviewDetail'
+import { getCoinData } from '@/lib/apis'
+import { getAnalysisByCoinId } from '@/lib/supabase'
+import PriceChart from '@/components/PriceChart'
+import RatingStars from '@/components/RatingStars'
 import RequestReviewForm from '@/components/RequestReviewForm'
+import { calculateOverallRating, formatPercentage, formatPrice, truncateText } from '@/lib/utils'
 
 interface PageProps {
   params: {
     coin_id: string
   }
 }
+
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   try {
@@ -23,11 +28,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
 
     return {
-      title: `${coin.name} (${coin.symbol.toUpperCase()}) Review - Crypto AI Insights`,
-      description: `AI-powered analysis of ${coin.name} with sentiment analysis, on-chain data, and eco ratings.`,
+      title: `${coin.name} AI Analysis`,
+      description: `Concise AI analysis, price, sentiment, on‑chain, and eco insights for ${coin.name}.`,
       openGraph: {
-        title: `${coin.name} (${coin.symbol.toUpperCase()}) Review`,
-        description: `AI-powered analysis of ${coin.name} with sentiment analysis, on-chain data, and eco ratings.`,
+        title: `${coin.name} AI Analysis`,
+        description: `Concise AI analysis, price, sentiment, on‑chain, and eco insights for ${coin.name}.`,
         images: [coin.image],
       },
     }
@@ -48,18 +53,137 @@ export default async function CoinReviewPage({ params }: PageProps) {
 
     const analysis = await getAnalysisByCoinId(params.coin_id)
 
+    // Mock fallbacks if data missing
+    const mock = {
+      price: 120289.0,
+      changePct: -2.07,
+      marketCap: '—',
+      volume: '—',
+      supply: '—',
+      stars: 4.5,
+      sentiment: -15,
+      onChainTen: 7.6,
+      ecoText: 'Moderate',
+    }
+
+    const price = coin.current_price ?? mock.price
+    const change24 = coin.price_change_percentage_24h ?? mock.changePct
+    const marketCapText = coin.market_cap ? `${formatPrice(coin.market_cap)}`.replace('$', '$') : mock.marketCap
+    const volumeText = coin.total_volume ? `${formatPrice(coin.total_volume)}`.replace('$', '$') : mock.volume
+    const supplyText = coin.circulating_supply?.toLocaleString?.() || mock.supply
+
+    const summary = truncateText(
+      (analysis?.content || 'Our AI summarizes key trends, risks, and opportunities based on price action, sentiment, activity and eco impact.').replace(/\n/g, ' '),
+      150
+    )
+    const stars = analysis ? calculateOverallRating(analysis.ratings) : mock.stars
+    const sentiment = analysis ? analysis.ratings.sentiment : mock.sentiment
+    const onChainPercent = analysis ? analysis.ratings.onChain : mock.onChainTen * 10 // convert 0..10 to 0..100
+    const ecoValue = analysis ? analysis.ratings.eco : (mock.ecoText === 'Excellent' ? 9 : mock.ecoText === 'Good' ? 7 : mock.ecoText === 'Moderate' ? 5 : 3)
+
     return (
       <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <Suspense fallback={<ReviewDetailSkeleton />}>
-            <CoinReviewDetail coin={coin} analysis={analysis} />
-          </Suspense>
-          
-          {!analysis && (
-            <div className="mt-12">
-              <RequestReviewForm coin={coin} />
+          {/* Header */}
+          <div className="rounded-lg p-6 bg-gradient-to-r from-crypto-secondary/60 to-crypto-secondary/30 border border-white/5 shadow-lg mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Image src={coin.image} alt={coin.name} width={40} height={40} className="rounded-full" />
+                <h1 className="text-2xl font-bold text-white">{coin.name} ({coin.symbol.toUpperCase()})</h1>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-semibold text-white">{formatPrice(price)}</p>
+                <p className={`${(change24 || 0) >= 0 ? 'text-green-400' : 'text-red-400'} font-semibold`}>
+                  {formatPercentage(change24 || 0)}
+                </p>
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Main content 2/3 */}
+            <div className="md:col-span-2 space-y-6">
+              {/* Price Chart */}
+              <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
+                <h3 className="text-lg font-semibold text-white mb-4">7-Day Price</h3>
+                <Suspense fallback={<div className="h-[300px] flex items-center justify-center text-gray-400">Loading chart...</div>}>
+                  <PriceChart coinId={coin.id} heightClass="h-[300px]" />
+                </Suspense>
+              </div>
+
+              {/* AI Analysis */}
+              <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
+                <h3 className="text-lg font-semibold text-white mb-3">AI Analysis</h3>
+                <p className="text-gray-300 text-sm mb-3">{summary}</p>
+                <div className="flex items-center mb-4">
+                  <RatingStars rating={stars} size="md" />
+                </div>
+
+                {/* Metrics */}
+                <div className="space-y-4">
+                  {/* Sentiment */}
+                  <div>
+                    <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                      <span>Sentiment</span>
+                      <span>{sentiment}</span>
+                    </div>
+                    <div className="h-2 rounded bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500"
+                        style={{ width: `${Math.max(0, Math.min(100, (sentiment + 100) / 2))}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* On-Chain */}
+                  <div>
+                    <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                      <span>On-Chain</span>
+                      <span>{(onChainPercent / 10).toFixed(1)}/10</span>
+                    </div>
+                    <div className="h-2 rounded bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-400 to-blue-600"
+                        style={{ width: `${Math.max(0, Math.min(100, onChainPercent))}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Eco */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-400">Eco Rating</span>
+                    <EcoBadge value={ecoValue} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Inline Request form anchor */}
+              <div id="request-review" className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
+                <h3 className="text-lg font-semibold text-white mb-3">Request a New Review</h3>
+                <RequestReviewForm coin={coin} />
+              </div>
+            </div>
+
+            {/* Sidebar 1/3 */}
+            <aside className="space-y-6">
+              <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
+                <h3 className="text-lg font-semibold text-white mb-3">Quick Facts</h3>
+                <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
+                  <li>Market Cap: <span className="text-white font-medium">{marketCapText}</span></li>
+                  <li>Volume (24h): <span className="text-white font-medium">{volumeText}</span></li>
+                  <li>Circulating Supply: <span className="text-white font-medium">{supplyText}</span></li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+
+          {/* Fixed Request button (desktop), full-width on mobile */}
+          <div className="mt-6 md:mt-0">
+            <a href="#request-review" className="block w-full md:w-auto md:fixed md:bottom-8 md:right-8 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-5 rounded-md shadow-lg transform transition hover:scale-105 text-center">
+              Request New Review
+            </a>
+          </div>
         </div>
       </div>
     )
@@ -83,4 +207,13 @@ function ReviewDetailSkeleton() {
       </div>
     </div>
   )
+}
+
+function EcoBadge({ value }: { value: number }) {
+  let label = 'Moderate'
+  let cls = 'text-yellow-400'
+  if (value >= 8) { label = 'Excellent'; cls = 'text-green-400' }
+  else if (value >= 6) { label = 'Good'; cls = 'text-green-300' }
+  else if (value < 4) { label = 'Poor'; cls = 'text-red-400' }
+  return <span className={`font-semibold ${cls}`}>{label}</span>
 }
