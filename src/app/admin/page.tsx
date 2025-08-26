@@ -25,6 +25,28 @@ export default function AdminPage() {
     activeUsers: 0
   })
 
+  // Load stats on mount
+  React.useEffect(() => {
+    let isMounted = true
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats')
+        if (!res.ok) return
+        const data = await res.json()
+        if (isMounted && data.success) {
+          setStats({
+            totalAnalyses: data.totalAnalyses ?? 0,
+            totalCoins: data.totalCoins ?? 0,
+            lastGenerated: data.lastGenerated ?? null,
+            activeUsers: data.activeUsers ?? 0,
+          })
+        }
+      } catch (_) {}
+    }
+    loadStats()
+    return () => { isMounted = false }
+  }, [])
+
   const handleBulkGeneration = async (limit: number) => {
     setIsGenerating(true)
     setGenerationProgress(null)
