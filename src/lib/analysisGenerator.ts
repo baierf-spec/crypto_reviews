@@ -19,30 +19,75 @@ export async function buildAnalysisFromCoin(coin: Coin) {
     ecoRating
   )
 
-  const prompt = `Analyze ${coin.name} (${coin.symbol}) cryptocurrency:\n\n` +
-    `Current Price: $${coin.current_price}\n` +
-    `Market Cap: $${coin.market_cap.toLocaleString()}\n` +
-    `24h Change: ${coin.price_change_percentage_24h}%\n\n` +
-    `On-Chain Data:\n` +
-    `- 24h Transactions: ${onChainData.transactions_24h.toLocaleString()}\n` +
-    `- Whale Activity: ${onChainData.whale_activity}\n` +
-    `- Network Growth: ${onChainData.network_growth}%\n\n` +
-    `Social Sentiment:\n` +
-    `- Twitter Score: ${sentimentData.twitter_score}\n` +
-    `- Reddit Score: ${sentimentData.reddit_score}\n` +
-    `- Overall Sentiment: ${sentimentData.overall_score}\n\n` +
-    `Environmental Rating: ${ecoRating}/10\n\n` +
-    `Please provide a comprehensive 1000-word analysis including sections for market position, technical analysis, on-chain activity, sentiment, environmental impact, price predictions, risk assessment, and overall recommendation. Make it engaging and SEO-friendly.`
+  const prompt = `Write a professional, objective cryptocurrency report in polished Markdown for ${coin.name} (${coin.symbol}).
+
+Tone & style:
+- Executive, concise sentences, no hype, avoid repetition.
+- Use clear section headings and short paragraphs (2–3 lines each).
+- Prefer bullet points for lists; include numbers where relevant.
+
+Structure (use these headings exactly):
+1. Executive Summary
+   - 2–3 bullets with the key takeaway, directional view (bullish/neutral/bearish), and major risks.
+2. Key Metrics
+   - A compact table with: Current Price, Market Cap, 24h Change, 24h Tx, Whale Activity, Network Growth, Twitter Score, Reddit Score, Eco Rating.
+3. Market Position
+4. Technical Overview
+5. On‑Chain Activity
+6. Social Sentiment
+7. Environmental Impact
+8. Price Outlook
+   - Short, Medium, Long term bullet targets aligned with provided predictions.
+9. Risks
+10. Bottom Line
+
+Facts you must use:
+- Current Price: $${coin.current_price}
+- Market Cap: $${coin.market_cap.toLocaleString()}
+- 24h Change: ${coin.price_change_percentage_24h}%
+- On‑chain: ${onChainData.transactions_24h.toLocaleString()} tx (24h), whale activity ${onChainData.whale_activity}, network growth ${onChainData.network_growth}%
+- Sentiment: Twitter ${sentimentData.twitter_score}, Reddit ${sentimentData.reddit_score}, Overall ${sentimentData.overall_score}
+- Environmental Rating: ${ecoRating}/10
+
+Formatting rules:
+- Use h2 (##) for main sections; bold labels for key numbers.
+- Use a tidy Markdown table for Key Metrics. Do not wrap numbers in code blocks.
+- Avoid speculative claims; tie claims to the numbers given.
+`
 
   let content: string
   if (!hasOpenAIKey) {
-    content = `Mock Analysis for ${coin.name} (${coin.symbol})\n\n` +
-      `Price: $${coin.current_price}. Market cap: $${coin.market_cap.toLocaleString()}. 24h change: ${coin.price_change_percentage_24h}%.\n` +
-      `On-chain: ${onChainData.network_growth}% growth, whale activity ${onChainData.whale_activity}, ` +
-      `${onChainData.transactions_24h.toLocaleString()} tx in 24h.\n` +
-      `Sentiment: overall ${sentimentData.overall_score}.\n\n` +
-      `Short-term: Consolidation with volatility. Medium-term: Depends on liquidity/macros. Long-term: Adoption-driven.\n` +
-      `(Generated without OpenAI key.)`
+    content = `## Executive Summary\n\n` +
+      `- ${coin.name} shows ${sentimentData.overall_score >= 10 ? 'a cautiously bullish' : sentimentData.overall_score <= -10 ? 'a cautious bearish' : 'a neutral'} setup with notable ${onChainData.network_growth}% network growth.\n` +
+      `- Key risks: sentiment swings (${sentimentData.twitter_score} Twitter), liquidity, and macro.\n` +
+      `- Eco rating ${ecoRating}/10.\n\n` +
+      `## Key Metrics\n` +
+      `| Metric | Value |\n|---|---|\n` +
+      `| Current Price | $${coin.current_price} |\n` +
+      `| Market Cap | $${coin.market_cap.toLocaleString()} |\n` +
+      `| 24h Change | ${coin.price_change_percentage_24h}% |\n` +
+      `| 24h Tx | ${onChainData.transactions_24h.toLocaleString()} |\n` +
+      `| Whale Activity | ${onChainData.whale_activity} |\n` +
+      `| Network Growth | ${onChainData.network_growth}% |\n` +
+      `| Twitter | ${sentimentData.twitter_score} |\n` +
+      `| Reddit | ${sentimentData.reddit_score} |\n` +
+      `| Eco | ${ecoRating}/10 |\n\n` +
+      `## Market Position\n` +
+      `${coin.name} remains a prominent asset with active volumes and broad recognition.\n\n` +
+      `## Technical Overview\n` +
+      `Price is in a ${coin.price_change_percentage_24h >= 0 ? 'constructive' : 'corrective'} short‑term phase. \n\n` +
+      `## On‑Chain Activity\n` +
+      `Transactions and growth suggest steady network usage; whale activity is ${onChainData.whale_activity.toLowerCase()}.\n\n` +
+      `## Social Sentiment\n` +
+      `Mixed signals: Twitter ${sentimentData.twitter_score}, Reddit ${sentimentData.reddit_score}.\n\n` +
+      `## Environmental Impact\n` +
+      `Eco rating ${ecoRating}/10 indicates ${ecoRating >= 8 ? 'excellent' : ecoRating >= 5 ? 'moderate' : 'higher'} footprint.\n\n` +
+      `## Price Outlook\n` +
+      `Short and medium term depend on liquidity and sentiment; long term on adoption.\n\n` +
+      `## Risks\n` +
+      `Volatility, regulation, liquidity shocks.\n\n` +
+      `## Bottom Line\n` +
+      `Balanced view with clear catalysts and risks. (Mock content without OpenAI key.)`
   } else {
     try {
       const completion = await openai.chat.completions.create({
