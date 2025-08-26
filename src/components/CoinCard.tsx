@@ -15,6 +15,10 @@ interface CoinCardProps {
 
 export default function CoinCard({ coin, analysis }: CoinCardProps) {
   const hasAnalysis = analysis && analysis.content
+  const safeRatings = analysis?.ratings ?? { sentiment: 0, onChain: 50, eco: 5 }
+  const sentimentStars = Math.max(0, Math.min(5, (safeRatings.sentiment + 100) / 200 * 5))
+  const onChainStars = Math.max(0, Math.min(5, (safeRatings.onChain || 0) / 20))
+  const ecoStars = Math.max(0, Math.min(5, (safeRatings.eco || 0) / 2))
 
   return (
     <div className="bg-crypto-secondary/50 rounded-xl p-5 hover:bg-crypto-secondary/70 transition-colors border border-white/5">
@@ -61,14 +65,14 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
           </div>
           <div className="grid grid-cols-3 gap-2 text-xs">
             <div className="text-center">
-              <RatingStars rating={analysis.ratings.sentiment} size="sm" />
+              <RatingStars rating={sentimentStars} size="sm" />
               <p className="text-gray-400 mt-1">Sentiment</p>
               <p className={`text-[11px] ${getSentimentColor(analysis.ratings.sentiment)}`}>
                 {analysis.ratings.sentiment >= 4 ? 'Bullish' : analysis.ratings.sentiment >= 2 ? 'Neutral' : 'Bearish'}
               </p>
             </div>
             <div className="text-center">
-              <RatingStars rating={analysis.ratings.onChain} size="sm" />
+              <RatingStars rating={onChainStars} size="sm" />
               <p className="text-gray-400 mt-1">On-Chain</p>
             </div>
             <div className="text-center">
