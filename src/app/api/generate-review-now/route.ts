@@ -25,8 +25,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Determine base URL from the incoming request (avoids localhost on Vercel)
+    const { origin } = new URL(request.url)
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || origin
+
     // Generate analysis immediately
-    const analysisResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/generate-review`, {
+    const analysisResponse = await fetch(`${baseUrl}/api/generate-review`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

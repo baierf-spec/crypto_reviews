@@ -5,7 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatPrice(price: number): string {
+export function formatPrice(price?: number | null): string {
+  if (price === undefined || price === null || Number.isNaN(price)) return '—'
   if (price >= 1) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -23,7 +24,8 @@ export function formatPrice(price: number): string {
   }
 }
 
-export function formatMarketCap(marketCap: number): string {
+export function formatMarketCap(marketCap?: number | null): string {
+  if (marketCap === undefined || marketCap === null || Number.isNaN(marketCap)) return '—'
   if (marketCap >= 1e12) {
     return `$${(marketCap / 1e12).toFixed(2)}T`
   } else if (marketCap >= 1e9) {

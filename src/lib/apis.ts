@@ -1,5 +1,17 @@
 import { Coin } from '@/types'
 
+// Small helper to avoid long hangs on serverless
+async function fetchWithTimeout(resource: string, options: RequestInit = {}, timeoutMs = 8000): Promise<Response> {
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const resp = await fetch(resource, { ...options, signal: controller.signal })
+    return resp
+  } finally {
+    clearTimeout(id)
+  }
+}
+
 // CoinMarketCap API functions (better than CoinGecko)
 const CMC_API_KEY = process.env.COINMARKETCAP_API_KEY || 'demo'
 const CMC_BASE_URL = 'https://pro-api.coinmarketcap.com/v1'
@@ -7,7 +19,7 @@ const CMC_BASE_URL = 'https://pro-api.coinmarketcap.com/v1'
 // Get top coins from CoinMarketCap (up to 5000)
 export async function getTopCoins(limit: number = 5000): Promise<Coin[]> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${CMC_BASE_URL}/cryptocurrency/listings/latest?limit=${limit}&convert=USD`,
       {
         headers: {
@@ -50,7 +62,7 @@ export async function getTopCoins(limit: number = 5000): Promise<Coin[]> {
 // Fallback to CoinGecko API
 async function getTopCoinsFallback(limit: number = 1000): Promise<Coin[]> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false&locale=en`,
       {
         headers: {
@@ -74,7 +86,7 @@ async function getTopCoinsFallback(limit: number = 1000): Promise<Coin[]> {
 // Search coins by name or symbol
 export async function searchCoins(query: string, limit: number = 100): Promise<Coin[]> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${CMC_BASE_URL}/cryptocurrency/map?search=${encodeURIComponent(query)}&limit=${limit}`,
       {
         headers: {
@@ -92,7 +104,7 @@ export async function searchCoins(query: string, limit: number = 100): Promise<C
     
     // Get detailed data for found coins
     const coinIds = data.data.map((coin: any) => coin.id).join(',')
-    const detailedResponse = await fetch(
+    const detailedResponse = await fetchWithTimeout(
       `${CMC_BASE_URL}/cryptocurrency/quotes/latest?id=${coinIds}&convert=USD`,
       {
         headers: {
@@ -138,7 +150,7 @@ export async function searchCoins(query: string, limit: number = 100): Promise<C
 export async function getCoinData(coinId: string): Promise<Coin | null> {
   try {
     // Try CoinMarketCap first
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${CMC_BASE_URL}/cryptocurrency/quotes/latest?slug=${coinId}&convert=USD`,
       {
         headers: {
@@ -151,7 +163,29 @@ export async function getCoinData(coinId: string): Promise<Coin | null> {
     if (response.ok) {
       const data = await response.json()
       const coin = Object.values(data.data)[0] as any
-      
+
+      let high24: number | undefined = coin.quote?.USD?.high_24h
+      let low24: number | undefined = coin.quote?.USD?.low_24h
+
+      // If CMC doesn't provide high/low, enrich from CoinGecko
+      if (high24 == null || low24 == null) {
+        try {
+          const cgResp = await fetchWithTimeout(
+            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coin.slug}&order=market_cap_desc&per_page=1&page=1&sparkline=false&locale=en`,
+            { headers: { 'Accept': 'application/json' } }
+          )
+          if (cgResp.ok) {
+            const cg = await cgResp.json()
+            if (cg && cg[0]) {
+              high24 = cg[0].high_24h
+              low24 = cg[0].low_24h
+            }
+          }
+        } catch (_) {
+          // ignore enrichment failures
+        }
+      }
+
       return {
         id: coin.slug,
         name: coin.name,
@@ -160,8 +194,8 @@ export async function getCoinData(coinId: string): Promise<Coin | null> {
         market_cap: coin.quote.USD.market_cap,
         total_volume: coin.quote.USD.volume_24h,
         price_change_percentage_24h: coin.quote.USD.percent_change_24h,
-        high_24h: coin.quote.USD.high_24h,
-        low_24h: coin.quote.USD.low_24h,
+        high_24h: high24 as any,
+        low_24h: low24 as any,
         image: `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin.id}.png`,
         market_cap_rank: coin.cmc_rank,
         circulating_supply: coin.circulating_supply,
@@ -175,7 +209,7 @@ export async function getCoinData(coinId: string): Promise<Coin | null> {
 
   // Fallback to CoinGecko
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinId}&order=market_cap_desc&per_page=1&page=1&sparkline=false&locale=en`,
       {
         headers: {
@@ -198,7 +232,7 @@ export async function getCoinData(coinId: string): Promise<Coin | null> {
 
 export async function getCoinPriceHistory(coinId: string, days: number = 7): Promise<any> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`,
       {
         headers: {
