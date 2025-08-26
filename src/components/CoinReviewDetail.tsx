@@ -7,6 +7,9 @@ import { Coin, Analysis } from '@/types'
 import RatingStars from './RatingStars'
 import EcoGauge from './EcoGauge'
 import LastReviewedInfo from './LastReviewedInfo'
+import dynamic from 'next/dynamic'
+
+const PriceChart = dynamic(() => import('./PriceChart'), { ssr: false })
 import { TrendingUp, TrendingDown, ThumbsUp, ThumbsDown, MessageCircle, Share2, Calendar, BarChart3 } from 'lucide-react'
 
 interface CoinReviewDetailProps {
@@ -111,6 +114,12 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
         hasAnalysis={!!analysis}
       />
 
+      {/* Price Chart */}
+      <div className="bg-crypto-secondary/50 rounded-lg p-6">
+        <h3 className="text-xl font-bold text-white mb-4">7-Day Price</h3>
+        <PriceChart coinId={coin.id} />
+      </div>
+
       {/* AI Analysis */}
       {analysis ? (
         <div className="space-y-6">
@@ -122,40 +131,35 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
                 <h2 className="text-2xl font-bold text-white">AI Analysis</h2>
               </div>
               <div className="flex items-center space-x-2">
-                <RatingStars rating={calculateOverallRating(analysis.ratings)} size="lg" />
-                <span className="text-gray-400 text-sm">
-                  {calculateOverallRating(analysis.ratings)}/5
-                </span>
+                <RatingStars rating={calculateOverallRating(analysis.ratings)} size="lg" showValue />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <RatingStars rating={analysis.ratings.sentiment} size="md" />
-                <p className="text-gray-400 mt-1">Sentiment</p>
-                <p className={`text-sm ${getSentimentColor(analysis.ratings.sentiment)}`}>
+            {/* Key Ratings */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-black/20 rounded-lg p-4 text-center">
+                <p className="text-gray-400 mb-2">Sentiment</p>
+                <RatingStars rating={analysis.ratings.sentiment} size="lg" showValue />
+                <p className={`text-sm mt-1 ${getSentimentColor(analysis.ratings.sentiment)}`}>
                   {analysis.ratings.sentiment >= 4 ? 'Bullish' : analysis.ratings.sentiment >= 2 ? 'Neutral' : 'Bearish'}
                 </p>
               </div>
-              <div className="text-center">
-                <RatingStars rating={analysis.ratings.onChain} size="md" />
-                <p className="text-gray-400 mt-1">On-Chain</p>
+              <div className="bg-black/20 rounded-lg p-4 text-center">
+                <p className="text-gray-400 mb-2">On-Chain</p>
+                <RatingStars rating={analysis.ratings.onChain} size="lg" showValue />
               </div>
-              <div className="text-center">
-                <EcoGauge rating={analysis.ratings.eco} />
-                <p className="text-gray-400 mt-1">Eco</p>
-                <p className={`text-sm ${getEcoColor(analysis.ratings.eco)}`}>
-                  {analysis.ratings.eco >= 4 ? 'Green' : analysis.ratings.eco >= 2 ? 'Moderate' : 'High Impact'}
-                </p>
+              <div className="bg-black/20 rounded-lg p-4 text-center flex flex-col items-center">
+                <p className="text-gray-400 mb-2">Eco</p>
+                <EcoGauge rating={analysis.ratings.eco} size="lg" />
               </div>
             </div>
           </div>
 
           {/* Analysis Content */}
           <div className="bg-crypto-secondary/50 rounded-lg p-6">
-            <div className="prose prose-invert max-w-none">
+            <article className="prose prose-invert max-w-none prose-headings:text-white prose-p:text-gray-200 prose-strong:text-white">
               <div dangerouslySetInnerHTML={{ __html: analysis.content.replace(/\n/g, '<br/>') }} />
-            </div>
+            </article>
           </div>
 
           {/* Price Predictions */}
