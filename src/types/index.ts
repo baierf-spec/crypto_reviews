@@ -29,9 +29,11 @@ export interface Analysis {
     overall: number; // 1 to 5 stars
   };
   price_prediction: {
-    short_term: string;
-    medium_term: string;
-    long_term: string;
+    short_term: { pct: number; target: number; low: number; high: number };
+    medium_term: { pct: number; target: number; low: number; high: number };
+    long_term: { pct: number; target: number; low: number; high: number };
+    confidence: number;
+    currency: string;
   };
   on_chain_data: {
     transactions_24h: number;

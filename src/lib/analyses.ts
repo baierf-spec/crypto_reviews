@@ -1,7 +1,7 @@
 // Simple in-memory storage for analyses
 // This ensures analyses are available even without Supabase configuration
 
-interface Analysis {
+export interface Analysis {
   id: string
   coin_id: string
   coin_name: string
@@ -15,9 +15,11 @@ interface Analysis {
     overall: number
   }
   price_prediction: {
-    short_term: string
-    medium_term: string
-    long_term: string
+    short_term: { pct: number; target: number; low: number; high: number }
+    medium_term: { pct: number; target: number; low: number; high: number }
+    long_term: { pct: number; target: number; low: number; high: number }
+    confidence: number
+    currency: string
   }
   on_chain_data: {
     transactions_24h: number
