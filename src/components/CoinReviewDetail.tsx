@@ -11,7 +11,7 @@ import AnalysisMarkdown from './AnalysisMarkdown'
 import dynamic from 'next/dynamic'
 
 const PriceChart = dynamic(() => import('./PriceChart'), { ssr: false })
-import { TrendingUp, TrendingDown, ThumbsUp, ThumbsDown, MessageCircle, Share2, BarChart3, Info, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, ThumbsUp, ThumbsDown, MessageCircle, Share2, BarChart3, Info, ArrowUpRight, ArrowDownRight, HelpCircle } from 'lucide-react'
 
 interface CoinReviewDetailProps {
   coin: Coin
@@ -21,6 +21,7 @@ interface CoinReviewDetailProps {
 export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailProps) {
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null)
   const [voteCount, setVoteCount] = useState({ up: 42, down: 8 })
+  const [showMetricHelp, setShowMetricHelp] = useState(false)
 
   const handleVote = async (vote: 'up' | 'down') => {
     if (userVote === vote) {
@@ -137,23 +138,39 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
               </div>
               <div className="flex items-center space-x-2">
                 <RatingStars rating={calculateOverallRating(analysis.ratings)} size="lg" showValue />
+                <button
+                  className="ml-3 inline-flex items-center text-xs text-gray-300 hover:text-white transition-colors"
+                  onClick={() => setShowMetricHelp(v => !v)}
+                  aria-expanded={showMetricHelp}
+                >
+                  <HelpCircle className="w-4 h-4 mr-1" />
+                  About these metrics
+                </button>
               </div>
             </div>
 
+            {showMetricHelp && (
+              <div className="rounded-md border border-white/10 bg-black/20 p-4 text-sm text-gray-300 mb-4">
+                <p className="mb-2"><span className="font-semibold text-white">Sentiment (−100..100):</span> derived from social signals (Twitter/Reddit). We map the overall score to stars by rescaling to 0–5. Bearish values are <span className="text-crypto-danger">red</span>, neutral near 0 are <span className="text-crypto-warning">amber</span>, bullish high positives are <span className="text-crypto-success">green</span>.</p>
+                <p className="mb-2"><span className="font-semibold text-white">On‑Chain (0..100):</span> heuristic score from network growth, activity and flow. It is normalized to a 0–5 star band by dividing by 20.</p>
+                <p className="mb-0"><span className="font-semibold text-white">Eco (1..10):</span> environmental impact rating. We rescale to stars by dividing by 2; values ≥8 are considered <span className="text-crypto-success">excellent</span>.</p>
+              </div>
+            )}
+
             {/* Key Ratings */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-black/20 rounded-lg p-4 text-center">
+              <div className="bg-black/20 rounded-lg p-4 text-center border border-white/5">
                 <p className="text-gray-400 mb-2">Sentiment</p>
                 <RatingStars rating={analysis.ratings.sentiment} size="lg" showValue />
                 <p className={`text-sm mt-1 ${getSentimentColor(analysis.ratings.sentiment)}`}>
                   {analysis.ratings.sentiment >= 4 ? 'Bullish' : analysis.ratings.sentiment >= 2 ? 'Neutral' : 'Bearish'}
                 </p>
               </div>
-              <div className="bg-black/20 rounded-lg p-4 text-center">
+              <div className="bg-black/20 rounded-lg p-4 text-center border border-white/5">
                 <p className="text-gray-400 mb-2">On-Chain</p>
                 <RatingStars rating={analysis.ratings.onChain} size="lg" showValue />
               </div>
-              <div className="bg-black/20 rounded-lg p-4 text-center flex flex-col items-center">
+              <div className="bg-black/20 rounded-lg p-4 text-center flex flex-col items-center border border-white/5">
                 <p className="text-gray-400 mb-2">Eco</p>
                 <EcoGauge rating={analysis.ratings.eco} size="lg" />
               </div>
