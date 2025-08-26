@@ -114,15 +114,19 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
         hasAnalysis={!!analysis}
       />
 
-      {/* Price Chart */}
-      <div className="bg-crypto-secondary/50 rounded-lg p-6">
-        <h3 className="text-xl font-bold text-white mb-4">7-Day Price</h3>
-        <PriceChart coinId={coin.id} />
-      </div>
+      {/* Main content + sidebar */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Main column */}
+        <div className="md:col-span-2 space-y-6">
+          {/* Price Chart */}
+          <div className="bg-crypto-secondary/50 rounded-lg p-6">
+            <h3 className="text-xl font-bold text-white mb-4">7-Day Price</h3>
+            <PriceChart coinId={coin.id} />
+          </div>
 
-      {/* AI Analysis */}
-      {analysis ? (
-        <div className="space-y-6">
+          {/* AI Analysis */}
+          {analysis ? (
+            <div className="space-y-6">
           {/* Analysis Header */}
           <div className="bg-crypto-secondary/50 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
@@ -264,19 +268,46 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
               </div>
             </div>
           </div>
+            </div>
+          ) : (
+            <div className="bg-crypto-secondary/50 rounded-lg p-8 text-center">
+              <div className="text-gray-400 mb-4">
+                <BarChart3 className="w-16 h-16 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">No AI Analysis Available</h3>
+                <p className="text-gray-400">
+                  We haven't generated an AI analysis for {coin.name} yet. 
+                  Use the "Request New Review" button above to get started.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="bg-crypto-secondary/50 rounded-lg p-8 text-center">
-          <div className="text-gray-400 mb-4">
-            <BarChart3 className="w-16 h-16 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No AI Analysis Available</h3>
-            <p className="text-gray-400">
-              We haven't generated an AI analysis for {coin.name} yet. 
-              Use the "Request New Review" button above to get started.
-            </p>
+
+        {/* Sidebar */}
+        <aside className="space-y-6">
+          <div className="bg-crypto-secondary/50 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Quick Facts</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Rank</span>
+                <span className="text-white font-medium">#{coin.market_cap_rank || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Circulating Supply</span>
+                <span className="text-white font-medium">{coin.circulating_supply?.toLocaleString?.() || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Total Supply</span>
+                <span className="text-white font-medium">{coin.total_supply?.toLocaleString?.() || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Max Supply</span>
+                <span className="text-white font-medium">{coin.max_supply?.toLocaleString?.() || '—'}</span>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        </aside>
+      </div>
     </div>
   )
 }
