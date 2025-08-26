@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
           symbol: coin_symbol,
           current_price,
           market_cap,
-          price_change_percentage_24h,
+          price_change_percentage_24h: price_change_24h,
         }
 
     if (!coin) {
