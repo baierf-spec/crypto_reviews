@@ -1,0 +1,274 @@
+'use client'
+
+import { useState } from 'react'
+import Image from 'next/image'
+import { formatPrice, formatMarketCap, formatPercentage, getSentimentColor, getEcoColor, calculateOverallRating } from '@/lib/utils'
+import { Coin, Analysis } from '@/types'
+import RatingStars from './RatingStars'
+import EcoGauge from './EcoGauge'
+import LastReviewedInfo from './LastReviewedInfo'
+import { TrendingUp, TrendingDown, ThumbsUp, ThumbsDown, MessageCircle, Share2, Calendar, BarChart3 } from 'lucide-react'
+
+interface CoinReviewDetailProps {
+  coin: Coin
+  analysis?: Analysis
+}
+
+export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailProps) {
+  const [userVote, setUserVote] = useState<'up' | 'down' | null>(null)
+  const [voteCount, setVoteCount] = useState({ up: 42, down: 8 })
+
+  const handleVote = async (vote: 'up' | 'down') => {
+    if (userVote === vote) {
+      // Remove vote
+      setUserVote(null)
+      setVoteCount(prev => ({
+        ...prev,
+        [vote]: prev[vote] - 1
+      }))
+    } else {
+      // Add/change vote
+      const oldVote = userVote
+      setUserVote(vote)
+      setVoteCount(prev => ({
+        ...prev,
+        [vote]: prev[vote] + 1,
+        ...(oldVote && { [oldVote]: prev[oldVote] - 1 })
+      }))
+    }
+
+    // TODO: Send vote to API
+    try {
+      await fetch('/api/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coin_id: coin.id,
+          vote: userVote === vote ? null : vote
+        })
+      })
+    } catch (error) {
+      console.error('Error voting:', error)
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Coin Header */}
+      <div className="bg-crypto-secondary/50 rounded-lg p-6">
+        <div className="flex items-center space-x-4 mb-4">
+          <Image
+            src={coin.image}
+            alt={coin.name}
+            width={60}
+            height={60}
+            className="rounded-full"
+          />
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-white">{coin.name}</h1>
+            <p className="text-gray-400 text-lg">{coin.symbol.toUpperCase()}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-white">${formatPrice(coin.current_price)}</p>
+            <div className="flex items-center">
+              {coin.price_change_percentage_24h >= 0 ? (
+                <TrendingUp className="w-5 h-5 text-green-400 mr-1" />
+              ) : (
+                <TrendingDown className="w-5 h-5 text-red-400 mr-1" />
+              )}
+              <p className={`text-lg ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {formatPercentage(coin.price_change_percentage_24h)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <p className="text-gray-400">Market Cap</p>
+            <p className="text-white font-semibold">${formatMarketCap(coin.market_cap)}</p>
+          </div>
+          <div>
+            <p className="text-gray-400">Volume (24h)</p>
+            <p className="text-white font-semibold">${formatMarketCap(coin.total_volume)}</p>
+          </div>
+          <div>
+            <p className="text-gray-400">High (24h)</p>
+            <p className="text-white font-semibold">${formatPrice(coin.high_24h)}</p>
+          </div>
+          <div>
+            <p className="text-gray-400">Low (24h)</p>
+            <p className="text-white font-semibold">${formatPrice(coin.low_24h)}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Last Reviewed Info */}
+      <LastReviewedInfo
+        coinId={coin.id}
+        coinName={coin.name}
+        lastReviewed={analysis?.date}
+        hasAnalysis={!!analysis}
+      />
+
+      {/* AI Analysis */}
+      {analysis ? (
+        <div className="space-y-6">
+          {/* Analysis Header */}
+          <div className="bg-crypto-secondary/50 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <BarChart3 className="w-6 h-6 text-crypto-accent" />
+                <h2 className="text-2xl font-bold text-white">AI Analysis</h2>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RatingStars rating={calculateOverallRating(analysis.ratings)} size="lg" />
+                <span className="text-gray-400 text-sm">
+                  {calculateOverallRating(analysis.ratings)}/5
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <RatingStars rating={analysis.ratings.sentiment} size="md" />
+                <p className="text-gray-400 mt-1">Sentiment</p>
+                <p className={`text-sm ${getSentimentColor(analysis.ratings.sentiment)}`}>
+                  {analysis.ratings.sentiment >= 4 ? 'Bullish' : analysis.ratings.sentiment >= 2 ? 'Neutral' : 'Bearish'}
+                </p>
+              </div>
+              <div className="text-center">
+                <RatingStars rating={analysis.ratings.onChain} size="md" />
+                <p className="text-gray-400 mt-1">On-Chain</p>
+              </div>
+              <div className="text-center">
+                <EcoGauge rating={analysis.ratings.eco} />
+                <p className="text-gray-400 mt-1">Eco</p>
+                <p className={`text-sm ${getEcoColor(analysis.ratings.eco)}`}>
+                  {analysis.ratings.eco >= 4 ? 'Green' : analysis.ratings.eco >= 2 ? 'Moderate' : 'High Impact'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Analysis Content */}
+          <div className="bg-crypto-secondary/50 rounded-lg p-6">
+            <div className="prose prose-invert max-w-none">
+              <div dangerouslySetInnerHTML={{ __html: analysis.content.replace(/\n/g, '<br/>') }} />
+            </div>
+          </div>
+
+          {/* Price Predictions */}
+          <div className="bg-crypto-secondary/50 rounded-lg p-6">
+            <h3 className="text-xl font-bold text-white mb-4">Price Predictions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-crypto-primary/20 rounded-lg p-4">
+                <h4 className="text-lg font-semibold text-white mb-2">Short Term (1 Week)</h4>
+                <p className="text-gray-300">{analysis.price_prediction.short_term}</p>
+              </div>
+              <div className="bg-crypto-primary/20 rounded-lg p-4">
+                <h4 className="text-lg font-semibold text-white mb-2">Medium Term (1 Month)</h4>
+                <p className="text-gray-300">{analysis.price_prediction.medium_term}</p>
+              </div>
+              <div className="bg-crypto-primary/20 rounded-lg p-4">
+                <h4 className="text-lg font-semibold text-white mb-2">Long Term (3 Months)</h4>
+                <p className="text-gray-300">{analysis.price_prediction.long_term}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* On-Chain Data */}
+          <div className="bg-crypto-secondary/50 rounded-lg p-6">
+            <h3 className="text-xl font-bold text-white mb-4">On-Chain Data</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-white">{analysis.on_chain_data.transactions_24h.toLocaleString()}</p>
+                <p className="text-gray-400">24h Transactions</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-white">{analysis.on_chain_data.whale_activity}</p>
+                <p className="text-gray-400">Whale Activity</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-white">{analysis.on_chain_data.network_growth}%</p>
+                <p className="text-gray-400">Network Growth</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Social Sentiment */}
+          <div className="bg-crypto-secondary/50 rounded-lg p-6">
+            <h3 className="text-xl font-bold text-white mb-4">Social Sentiment</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-white">{analysis.social_sentiment.twitter_score}</p>
+                <p className="text-gray-400">Twitter Score</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-white">{analysis.social_sentiment.reddit_score}</p>
+                <p className="text-gray-400">Reddit Score</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-white">{analysis.social_sentiment.overall_score}</p>
+                <p className="text-gray-400">Overall Sentiment</p>
+              </div>
+            </div>
+          </div>
+
+          {/* User Interaction */}
+          <div className="bg-crypto-secondary/50 rounded-lg p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleVote('up')}
+                    className={`p-2 rounded-lg transition-colors ${
+                      userVote === 'up' 
+                        ? 'bg-green-500/20 text-green-400' 
+                        : 'bg-gray-600/50 text-gray-400 hover:bg-gray-600/70'
+                    }`}
+                  >
+                    <ThumbsUp className="w-5 h-5" />
+                  </button>
+                  <span className="text-white font-semibold">{voteCount.up}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleVote('down')}
+                    className={`p-2 rounded-lg transition-colors ${
+                      userVote === 'down' 
+                        ? 'bg-red-500/20 text-red-400' 
+                        : 'bg-gray-600/50 text-gray-400 hover:bg-gray-600/70'
+                    }`}
+                  >
+                    <ThumbsDown className="w-5 h-5" />
+                  </button>
+                  <span className="text-white font-semibold">{voteCount.down}</span>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button className="p-2 bg-gray-600/50 text-gray-400 hover:bg-gray-600/70 rounded-lg transition-colors">
+                  <MessageCircle className="w-5 h-5" />
+                </button>
+                <button className="p-2 bg-gray-600/50 text-gray-400 hover:bg-gray-600/70 rounded-lg transition-colors">
+                  <Share2 className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-crypto-secondary/50 rounded-lg p-8 text-center">
+          <div className="text-gray-400 mb-4">
+            <BarChart3 className="w-16 h-16 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-2">No AI Analysis Available</h3>
+            <p className="text-gray-400">
+              We haven't generated an AI analysis for {coin.name} yet. 
+              Use the "Request New Review" button above to get started.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
