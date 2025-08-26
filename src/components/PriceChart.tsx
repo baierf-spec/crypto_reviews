@@ -7,13 +7,13 @@ import {
   LineElement,
   PointElement,
   LinearScale,
-  TimeScale,
+  CategoryScale,
   Tooltip,
   Filler,
   Legend,
 } from 'chart.js'
 
-ChartJS.register(LineElement, PointElement, LinearScale, TimeScale, Tooltip, Filler, Legend)
+ChartJS.register(CategoryScale, LineElement, PointElement, LinearScale, Tooltip, Filler, Legend)
 
 interface PriceChartProps {
   coinId: string
@@ -66,7 +66,7 @@ export default function PriceChart({ coinId }: PriceChartProps) {
         options={{
           plugins: { legend: { display: false } },
           scales: {
-            x: { ticks: { color: '#9CA3AF' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            x: { type: 'category', ticks: { color: '#9CA3AF' }, grid: { color: 'rgba(255,255,255,0.05)' } },
             y: { ticks: { color: '#9CA3AF' }, grid: { color: 'rgba(255,255,255,0.05)' } },
           },
         }}
