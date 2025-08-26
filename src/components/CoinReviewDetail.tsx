@@ -241,16 +241,34 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
             <h3 className="text-xl font-bold text-white mb-4">Social Sentiment</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
-                <p className="text-2xl font-bold text-white">{analysis.social_sentiment.twitter_score}</p>
+                <p
+                  className="text-2xl font-bold text-white"
+                  title="Twitter sentiment score on a −100 to 100 scale. Positive = bullish, negative = bearish."
+                >
+                  {analysis.social_sentiment.twitter_score}
+                </p>
                 <p className="text-gray-400">Twitter Score</p>
+                <p className="text-xs text-gray-500 mt-1">−100…100 scale; &gt;30 bullish, &lt;−30 bearish</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-white">{analysis.social_sentiment.reddit_score}</p>
+                <p
+                  className="text-2xl font-bold text-white"
+                  title="Reddit sentiment score on a −100 to 100 scale. Positive = bullish, negative = bearish."
+                >
+                  {analysis.social_sentiment.reddit_score}
+                </p>
                 <p className="text-gray-400">Reddit Score</p>
+                <p className="text-xs text-gray-500 mt-1">−100…100 scale; &gt;30 bullish, &lt;−30 bearish</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-white">{analysis.social_sentiment.overall_score}</p>
+                <p
+                  className="text-2xl font-bold text-white"
+                  title="Combined sentiment across sources on a −100 to 100 scale."
+                >
+                  {analysis.social_sentiment.overall_score}
+                </p>
                 <p className="text-gray-400">Overall Sentiment</p>
+                <p className="text-xs text-gray-500 mt-1">Blend of sources; &gt;30 bullish, &lt;−30 bearish</p>
               </div>
             </div>
           </div>
