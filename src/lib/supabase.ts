@@ -59,7 +59,7 @@ export async function getAnalysisByCoinId(coin_id: string) {
 export async function getCoinQueue() {
   try {
     const { data, error } = await supabase
-      .from('coin_queue')
+      .from('coins_queue')
       .select('*')
       .order('priority', { ascending: false })
       .order('created_at', { ascending: true })
@@ -76,7 +76,7 @@ export async function updateCoinAnalysisDate(coin_id: string) {
   try {
     const client = getServerClient()
     const { error } = await client
-      .from('coin_queue')
+      .from('coins_queue')
       .update({ last_analyzed_date: new Date().toISOString() })
       .eq('coin_id', coin_id)
 
@@ -91,9 +91,11 @@ export async function updateCoinAnalysisDate(coin_id: string) {
 export async function saveAnalysis(analysis: any) {
   try {
     const client = getServerClient()
+    // Do not send client-generated id to a UUID column; let DB generate it
+    const { id: _ignoreId, ...rest } = analysis || {}
     const { error } = await client
       .from('analyses')
-      .insert([analysis])
+      .insert([rest])
 
     if (error) throw error
     return true
@@ -107,7 +109,7 @@ export async function addCoinToQueue({ coin_id, priority = 1 }: { coin_id: strin
   try {
     const client = getServerClient()
     const { error } = await client
-      .from('coin_queue')
+      .from('coins_queue')
       .insert([{
         coin_id,
         priority,
