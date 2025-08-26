@@ -10,7 +10,7 @@ import LastReviewedInfo from './LastReviewedInfo'
 import dynamic from 'next/dynamic'
 
 const PriceChart = dynamic(() => import('./PriceChart'), { ssr: false })
-import { TrendingUp, TrendingDown, ThumbsUp, ThumbsDown, MessageCircle, Share2, Calendar, BarChart3 } from 'lucide-react'
+import { TrendingUp, TrendingDown, ThumbsUp, ThumbsDown, MessageCircle, Share2, BarChart3, Info, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 
 interface CoinReviewDetailProps {
   coin: Coin
@@ -58,7 +58,7 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
   return (
     <div className="space-y-8">
       {/* Coin Header */}
-      <div className="bg-crypto-secondary/50 rounded-lg p-6">
+      <div className="rounded-lg p-6 bg-gradient-to-r from-crypto-secondary/60 to-crypto-secondary/30 border border-white/5">
         <div className="flex items-center space-x-4 mb-4">
           <Image
             src={coin.image}
@@ -73,11 +73,11 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
           </div>
           <div className="text-right">
             <p className="text-2xl font-bold text-white">{formatPrice(coin.current_price)}</p>
-            <div className="flex items-center">
+            <div className="flex items-center justify-end">
               {coin.price_change_percentage_24h >= 0 ? (
-                <TrendingUp className="w-5 h-5 text-green-400 mr-1" />
+                <ArrowUpRight className="w-5 h-5 text-green-400 mr-1" />
               ) : (
-                <TrendingDown className="w-5 h-5 text-red-400 mr-1" />
+                <ArrowDownRight className="w-5 h-5 text-red-400 mr-1" />
               )}
               <p className={`text-lg ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {formatPercentage(coin.price_change_percentage_24h)}
@@ -86,20 +86,20 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-2">
+          <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5">
             <p className="text-gray-400">Market Cap</p>
             <p className="text-white font-semibold">{formatMarketCap(coin.market_cap)}</p>
           </div>
-          <div>
+          <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5">
             <p className="text-gray-400">Volume (24h)</p>
             <p className="text-white font-semibold">{formatMarketCap(coin.total_volume)}</p>
           </div>
-          <div>
+          <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5">
             <p className="text-gray-400">High (24h)</p>
             <p className="text-white font-semibold">{formatPrice(coin.high_24h)}</p>
           </div>
-          <div>
+          <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5">
             <p className="text-gray-400">Low (24h)</p>
             <p className="text-white font-semibold">{formatPrice(coin.low_24h)}</p>
           </div>
@@ -157,6 +157,10 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
 
           {/* Analysis Content */}
           <div className="bg-crypto-secondary/50 rounded-lg p-6">
+            <div className="flex items-center gap-2 text-sm text-gray-300 mb-4">
+              <Info className="w-4 h-4 text-crypto-accent" />
+              <span>AI-generated content for educational purposes only. Not financial advice.</span>
+            </div>
             <article className="prose prose-invert max-w-none prose-headings:text-white prose-p:text-gray-200 prose-strong:text-white">
               <div dangerouslySetInnerHTML={{ __html: analysis.content.replace(/\n/g, '<br/>') }} />
             </article>
