@@ -147,7 +147,7 @@ export default async function CoinReviewPage({ params }: PageProps) {
               {/* Advanced tabs section */}
               <AdvancedAnalysisTabs coin={coin} analysis={analysis || null} />
 
-              {/* Full content placed AFTER indicators (below tabs), not in Overview */}
+              {/* Full content placed AFTER indicators (below tabs), replaces summary */}
               <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
                 <h3 className="text-lg font-semibold text-white mb-3">Full Analysis</h3>
                 {analysis ? (

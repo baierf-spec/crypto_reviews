@@ -54,15 +54,15 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
       <div className="border-t border-white/5 pt-3 mb-4">
         <div className="grid grid-cols-3 gap-2 text-xs text-gray-400">
           <div>
-            <div className="uppercase tracking-wide">MC</div>
+            <div className="uppercase tracking-wide flex items-center gap-1">MC</div>
             <div className="text-white font-medium">{formatMarketCap(coin.market_cap)}</div>
           </div>
           <div>
-            <div className="uppercase tracking-wide">Vol (24h)</div>
+            <div className="uppercase tracking-wide flex items-center gap-1">Vol (24h)</div>
             <div className="text-white font-medium">{formatMarketCap(coin.total_volume)}</div>
           </div>
           <div>
-            <div className="uppercase tracking-wide">Rank</div>
+            <div className="uppercase tracking-wide flex items-center gap-1">Rank</div>
             <div className="text-white font-medium">#{coin.market_cap_rank || '—'}</div>
           </div>
         </div>
@@ -73,18 +73,18 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium text-gray-300">AI Analysis</h4>
-            <RatingStars rating={calculateOverallRating(analysis.ratings)} size="sm" />
+            <RatingStars rating={calculateOverallRating(analysis.ratings)} size="sm" hint="Overall rating blends sentiment, on‑chain and eco scores." />
           </div>
           <div className="grid grid-cols-3 gap-2 text-xs">
             <div className="text-center">
-              <RatingStars rating={sentimentStars} size="sm" />
+              <RatingStars rating={sentimentStars} size="sm" hint="Sentiment (−100..100) rescaled 0–5 stars. Higher = more bullish." />
               <p className="text-gray-400 mt-1">Sentiment</p>
               <p className={`text-[11px] ${getSentimentColor(analysis.ratings.sentiment)}`}>
                 {analysis.ratings.sentiment >= 4 ? 'Bullish' : analysis.ratings.sentiment >= 2 ? 'Neutral' : 'Bearish'}
               </p>
             </div>
             <div className="text-center">
-              <RatingStars rating={onChainStars} size="sm" />
+              <RatingStars rating={onChainStars} size="sm" hint="On‑Chain score (0..100) rescaled 0–5 stars from activity/growth/flows." />
               <p className="text-gray-400 mt-1">On-Chain</p>
             </div>
             <div className="text-center">

@@ -1,6 +1,6 @@
 'use client'
 
-import { Star } from 'lucide-react'
+import { Star, HelpCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface RatingStarsProps {
@@ -9,6 +9,7 @@ interface RatingStarsProps {
   size?: 'sm' | 'md' | 'lg'
   showValue?: boolean
   className?: string
+  hint?: string
 }
 
 export default function RatingStars({
@@ -16,7 +17,8 @@ export default function RatingStars({
   maxRating = 5,
   size = 'md',
   showValue = false,
-  className
+  className,
+  hint
 }: RatingStarsProps) {
   const sizeClasses = {
     sm: 'w-4 h-4',
@@ -84,6 +86,11 @@ export default function RatingStars({
       {showValue && (
         <span className="text-sm text-gray-300 tabular-nums">
           {rating.toFixed(1)}
+        </span>
+      )}
+      {hint && (
+        <span title={hint} className="text-gray-400">
+          <HelpCircle className={cn(sizeClasses[size])} />
         </span>
       )}
     </div>

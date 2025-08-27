@@ -307,9 +307,9 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Sentiment & Social</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Twitter Score</span><div className="text-white font-semibold">{analysis?.social_sentiment?.twitter_score ?? '—'}</div></div>
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Reddit Score</span><div className="text-white font-semibold">{analysis?.social_sentiment?.reddit_score ?? '—'}</div></div>
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Overall</span><div className="text-white font-semibold">{analysis?.social_sentiment?.overall_score ?? '—'}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Twitter Score</span><div className="text-white font-semibold">{currentAnalysis?.social_sentiment?.twitter_score ?? '—'}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Reddit Score</span><div className="text-white font-semibold">{currentAnalysis?.social_sentiment?.reddit_score ?? '—'}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Overall</span><div className="text-white font-semibold">{currentAnalysis?.social_sentiment?.overall_score ?? '—'}</div></div>
           </div>
           <div className="h-64">
             <Bar
@@ -336,9 +336,9 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Price Prediction</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Short Term</span><div className="text-white font-semibold">{analysis?.price_prediction?.short_term ? `${(analysis.price_prediction.short_term.pct).toFixed(2)}% → ${formatPrice(analysis.price_prediction.short_term.target)}` : '—'}</div></div>
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Medium Term</span><div className="text-white font-semibold">{analysis?.price_prediction?.medium_term ? `${(analysis.price_prediction.medium_term.pct).toFixed(2)}% → ${formatPrice(analysis.price_prediction.medium_term.target)}` : '—'}</div></div>
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Long Term</span><div className="text-white font-semibold">{analysis?.price_prediction?.long_term ? `${(analysis.price_prediction.long_term.pct).toFixed(2)}% → ${formatPrice(analysis.price_prediction.long_term.target)}` : '—'}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Short Term</span><div className="text-white font-semibold">{currentAnalysis?.price_prediction?.short_term ? `${(currentAnalysis.price_prediction.short_term.pct).toFixed(2)}% → ${formatPrice(currentAnalysis.price_prediction.short_term.target)}` : '—'}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Medium Term</span><div className="text-white font-semibold">{currentAnalysis?.price_prediction?.medium_term ? `${(currentAnalysis.price_prediction.medium_term.pct).toFixed(2)}% → ${formatPrice(currentAnalysis.price_prediction.medium_term.target)}` : '—'}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Long Term</span><div className="text-white font-semibold">{currentAnalysis?.price_prediction?.long_term ? `${(currentAnalysis.price_prediction.long_term.pct).toFixed(2)}% → ${formatPrice(currentAnalysis.price_prediction.long_term.target)}` : '—'}</div></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="h-64 bg-black/10 rounded">
