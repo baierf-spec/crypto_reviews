@@ -10,6 +10,8 @@ import RequestReviewForm from '@/components/RequestReviewForm'
 import AnalysisMarkdown from '@/components/AnalysisMarkdown'
 import AdvancedAnalysisTabs from '@/components/AdvancedAnalysisTabs'
 import { calculateOverallRating, formatPercentage, formatPrice, truncateText } from '@/lib/utils'
+import dynamic from 'next/dynamic'
+const ClientAnalysis = dynamic(() => import('@/components/ClientAnalysis'), { ssr: false })
 
 interface PageProps {
   params: {
@@ -155,6 +157,10 @@ export default async function CoinReviewPage({ params }: PageProps) {
                     <AnalysisMarkdown content={analysis?.content || 'Analysis content is not available yet.'} />
                   )}
                 </div>
+              )}
+              {/* Client fallback render if DB still syncing */}
+              {!analysis && (
+                <ClientAnalysis coinId={coin.id} />
               )}
 
               {/* Inline Request form anchor */}
