@@ -194,7 +194,10 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
                 <RatingStars rating={overallStars} size="md" />
                 <span className="ml-3 text-gray-400 text-sm">Current Price: <span className="text-white font-semibold">{formatPrice(coin.current_price)}</span></span>
               </div>
-              <AnalysisMarkdown content={analysis.content} />
+              <p className="text-gray-300 text-sm">
+                {(typeof analysis.content === 'string' ? analysis.content.replace(/\s+/g, ' ').slice(0, 280) : 'AI analysis available below.')}
+                {typeof analysis.content === 'string' && analysis.content.length > 280 ? '…' : ''}
+              </p>
             </div>
           )}
           {!analysis && (
