@@ -46,6 +46,23 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
+  // Try to hydrate analysis from API if not provided
+  const [analysisState, setAnalysisState] = useState<Analysis | null>(analysis ?? null)
+  useEffect(() => {
+    if (analysis) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/analyses/${encodeURIComponent(coin.id)}`).catch(() => null)
+        if (res && res.ok) {
+          const json = await res.json()
+          if (!cancelled && json?.data) setAnalysisState(json.data as Analysis)
+        }
+      } catch (_) {}
+    })()
+    return () => { cancelled = true }
+  }, [coin.id, analysis])
+
   // -------- Real market history (TA) --------
   const [history, setHistory] = useState<number[][] | null>(null)
   useEffect(() => {
@@ -135,7 +152,8 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
     return { macd, signal: signalLine, hist }
   }
 
-  const overallStars = analysis ? calculateOverallRating(analysis.ratings) : 0
+  const currentAnalysis = analysisState || analysis || null
+  const overallStars = currentAnalysis ? calculateOverallRating(currentAnalysis.ratings) : 0
 
   // Build datasets for TA from real history
   const taData = useMemo(() => {
@@ -164,9 +182,9 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
 
   // Sentiment chart from analysis (Twitter / Reddit / Overall)
   const sentimentBar = useMemo(() => {
-    const tw = analysis?.social_sentiment?.twitter_score ?? 0
-    const rd = analysis?.social_sentiment?.reddit_score ?? 0
-    const ov = analysis?.social_sentiment?.overall_score ?? 0
+    const tw = currentAnalysis?.social_sentiment?.twitter_score ?? 0
+    const rd = currentAnalysis?.social_sentiment?.reddit_score ?? 0
+    const ov = currentAnalysis?.social_sentiment?.overall_score ?? 0
     const vals = [tw, rd, ov]
     return {
       labels: ['Twitter', 'Reddit', 'Overall'],
@@ -174,16 +192,16 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         { label: 'Sentiment (−100..100)', data: vals, backgroundColor: vals.map(v => (v >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)')) },
       ],
     }
-  }, [analysis?.social_sentiment])
+  }, [currentAnalysis?.social_sentiment])
 
   // Prediction probabilities derived from sentiment (if no explicit probabilities)
   const probs = useMemo(() => {
-    const s = analysis?.ratings?.sentiment ?? 0
+    const s = currentAnalysis?.ratings?.sentiment ?? 0
     const bull = Math.max(10, Math.min(80, 50 + s * 0.3))
     const bear = Math.max(10, Math.min(80, 50 - s * 0.3))
     const neu = Math.max(0, 100 - bull - bear)
     return { bull, neu, bear }
-  }, [analysis?.ratings?.sentiment])
+  }, [currentAnalysis?.ratings?.sentiment])
   const predictionPie = useMemo(() => ({
     labels: ['Bullish', 'Neutral', 'Bearish'],
     datasets: [
@@ -194,7 +212,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
   const projectionLine = useMemo(() => {
     const base = coin.current_price || 100
     const labels = ['Now', '1w', '1m', '3m']
-    const p = analysis?.price_prediction as any
+    const p = currentAnalysis?.price_prediction as any
     const s = p?.short_term?.target ?? base
     const m = p?.medium_term?.target ?? base
     const l = p?.long_term?.target ?? base
@@ -202,7 +220,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
       labels,
       datasets: [ { label: 'Trajectory', data: [base, s, m, l], borderColor: '#22c55e' } ],
     }
-  }, [coin.current_price, analysis?.price_prediction])
+  }, [coin.current_price, currentAnalysis?.price_prediction])
 
   return (
     <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
@@ -279,6 +297,8 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
             />
           </div>
           <TAInsightBadge closes={closes} />
+          {/* Beginner-friendly summary */}
+          <div className="mt-2 text-xs text-gray-400">This section summarizes momentum and trend using RSI, moving averages and Bollinger Bands. Positive values usually indicate strength; negative values caution weakness.</div>
           <p className="text-xs text-gray-500">Indicators are illustrative (mock). Use professional tools for trading decisions.</p>
         </div>
       )}
