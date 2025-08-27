@@ -112,11 +112,12 @@ export default async function CoinReviewPage({ params }: PageProps) {
       ecoText: 'Moderate',
     }
 
-    const price = coin.current_price ?? mock.price
-    const change24 = coin.price_change_percentage_24h ?? mock.changePct
-    const marketCapText = coin.market_cap ? `${formatPrice(coin.market_cap)}`.replace('$', '$') : mock.marketCap
-    const volumeText = coin.total_volume ? `${formatPrice(coin.total_volume)}`.replace('$', '$') : mock.volume
-    const supplyText = coin.circulating_supply?.toLocaleString?.() || mock.supply
+    const c: any = coin as any
+    const price = c.current_price ?? mock.price
+    const change24 = c.price_change_percentage_24h ?? mock.changePct
+    const marketCapText = c.market_cap ? `${formatPrice(c.market_cap)}`.replace('$', '$') : mock.marketCap
+    const volumeText = c.total_volume ? `${formatPrice(c.total_volume)}`.replace('$', '$') : mock.volume
+    const supplyText = c.circulating_supply?.toLocaleString?.() || mock.supply
 
     const summary = truncateText(
       (analysis?.content || 'Our AI summarizes key trends, risks, and opportunities based on price action, sentiment, activity and eco impact.').replace(/\n/g, ' '),
@@ -144,11 +145,11 @@ export default async function CoinReviewPage({ params }: PageProps) {
           <div className="rounded-lg p-6 bg-gradient-to-r from-crypto-secondary/60 to-crypto-secondary/30 border border-white/5 shadow-lg mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <Image src={coin.image || '/favicon.ico'} alt={coin.name || params.coin_id} width={40} height={40} className="rounded-full" />
-                <h1 className="text-2xl font-bold text-white">{coin.name} ({coin.symbol?.toUpperCase?.() || coin.id?.toUpperCase?.()})</h1>
+                <Image src={c.image || '/favicon.ico'} alt={c.name || params.coin_id} width={40} height={40} className="rounded-full" />
+                <h1 className="text-2xl font-bold text-white">{c.name} ({c.symbol?.toUpperCase?.() || c.id?.toUpperCase?.()})</h1>
               </div>
               <div className="text-right">
-                <LivePrice symbol={(coin as any).symbol} initialPrice={price} initialPct={change24} />
+                <LivePrice symbol={c.symbol} initialPrice={price} initialPct={change24} />
               </div>
             </div>
           </div>
@@ -168,12 +169,12 @@ export default async function CoinReviewPage({ params }: PageProps) {
               <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
                 <h3 className="text-lg font-semibold text-white mb-4">7-Day Price</h3>
                 <Suspense fallback={<div className="h-[300px] flex items-center justify-center text-gray-400">Loading chart...</div>}>
-                  <PriceChart coinId={coin.id} heightClass="h-[300px]" />
+                  <PriceChart coinId={c.id} heightClass="h-[300px]" />
                 </Suspense>
               </div>
 
               {/* Advanced tabs section */}
-              <AdvancedAnalysisTabs coin={coin} analysis={analysis || null} />
+              <AdvancedAnalysisTabs coin={c} analysis={analysis || null} />
 
               {/* Full content placed AFTER indicators (below tabs), replaces summary */}
               <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
@@ -185,14 +186,14 @@ export default async function CoinReviewPage({ params }: PageProps) {
                     <AnalysisMarkdown content={analysis?.content || 'Analysis content is not available yet.'} />
                   )
                 ) : (
-                  <ClientAnalysis coinId={coin.id} />
+                  <ClientAnalysis coinId={c.id} />
                 )}
               </div>
 
               {/* Inline Request form anchor */}
               <div id="request-review" className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
                 <h3 className="text-lg font-semibold text-white mb-3">Request a New Review</h3>
-                <RequestReviewForm coin={coin} />
+                <RequestReviewForm coin={c} />
               </div>
             </div>
 
