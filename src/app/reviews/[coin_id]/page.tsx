@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import Image from 'next/image'
+import { useLivePrice } from '@/hooks/useLivePrice'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { getCoinData } from '@/lib/apis'
@@ -127,10 +128,21 @@ export default async function CoinReviewPage({ params }: PageProps) {
                 <h1 className="text-2xl font-bold text-white">{coin.name} ({coin.symbol?.toUpperCase?.() || coin.id?.toUpperCase?.()})</h1>
               </div>
               <div className="text-right">
-                <p className="text-xl font-semibold text-white">{formatPrice(price)}</p>
-                <p className={`${(change24 || 0) >= 0 ? 'text-green-400' : 'text-red-400'} font-semibold`}>
-                  {formatPercentage(change24 || 0)}
-                </p>
+                {/* Live price (client) with fallback to server value */}
+                {/* eslint-disable-next-line react-hooks/rules-of-hooks */}
+                {(() => {
+                  const live = useLivePrice(coin.symbol?.toUpperCase?.(), price, change24)
+                  const livePrice = live.price ?? price
+                  const livePct = live.pct ?? change24
+                  return (
+                    <div>
+                      <p className="text-xl font-semibold text-white">{formatPrice(livePrice)}</p>
+                      <p className={`${(livePct || 0) >= 0 ? 'text-green-400' : 'text-red-400'} font-semibold`}>
+                        {formatPercentage(livePct || 0)}
+                      </p>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           </div>

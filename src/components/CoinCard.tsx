@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice, formatMarketCap, formatPercentage, getSentimentColor, getEcoColor, calculateOverallRating } from '@/lib/utils'
+import { useLivePrice } from '@/hooks/useLivePrice'
 import { Coin, Analysis } from '@/types'
 import RatingStars from './RatingStars'
 import EcoGauge from './EcoGauge'
@@ -36,17 +37,26 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
           <p className="text-gray-400 text-xs">{coin.symbol.toUpperCase()}</p>
         </div>
         <div className="text-right">
-          <p className="text-white font-semibold">{formatPrice(coin.current_price)}</p>
-          <div className="flex items-center justify-end">
-            {coin.price_change_percentage_24h >= 0 ? (
-              <TrendingUp className="w-4 h-4 text-green-400 mr-1" />
-            ) : (
-              <TrendingDown className="w-4 h-4 text-red-400 mr-1" />
-            )}
-            <p className={`text-xs ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {formatPercentage(coin.price_change_percentage_24h)}
-            </p>
-          </div>
+          {(() => {
+            const live = useLivePrice(coin.symbol?.toUpperCase?.(), coin.current_price, coin.price_change_percentage_24h)
+            const livePrice = live.price ?? coin.current_price
+            const livePct = live.pct ?? coin.price_change_percentage_24h
+            return (
+              <>
+                <p className="text-white font-semibold">{formatPrice(livePrice)}</p>
+                <div className="flex items-center justify-end">
+                  {(livePct || 0) >= 0 ? (
+                    <TrendingUp className="w-4 h-4 text-green-400 mr-1" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 text-red-400 mr-1" />
+                  )}
+                  <p className={`text-xs ${(livePct || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {formatPercentage(livePct || 0)}
+                  </p>
+                </div>
+              </>
+            )
+          })()}
         </div>
       </div>
 
