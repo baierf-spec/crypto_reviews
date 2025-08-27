@@ -46,120 +46,149 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
-  // -------- Mock/derived data (replace with real API integrations) --------
-  const mock = useMemo(() => ({
-    rsi: 65,
-    macd: 1.2,
-    ma50: 0.98 * (coin.current_price || 100),
-    ma200: 0.92 * (coin.current_price || 100),
-    bbUpper: 1.05 * (coin.current_price || 100),
-    bbLower: 0.95 * (coin.current_price || 100),
-    tweetVolume: 15000,
-    redditUpvotes: 5000,
-    sentimentBreakdown: { pos: 70, neu: 20, neg: 10 },
-    sentiment7d: [-10, 5, 15, -5, 8, 12, 20],
-    predictions: {
-      bullish: { changePct: 0.20, prob: 60 },
-      neutral: { changePct: 0.00, prob: 20 },
-      bearish: { changePct: -0.10, prob: 20 },
-    },
-    hashtags: ['#bitcoin', '#altcoins', '#XRP', '#crypto', '#trading'],
-    mentions: ['@binance', '@coinbase', '@cz_binance'],
-  }), [coin.current_price])
+  // -------- Real market history (TA) --------
+  const [history, setHistory] = useState<number[][] | null>(null)
+  useEffect(() => {
+    if (!mounted) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/coins/${coin.id}/history?days=90`).catch(() => null)
+        if (!res || !res.ok) return
+        const json = await res.json()
+        if (!cancelled) setHistory(Array.isArray(json.prices) ? json.prices : null)
+      } catch (_) {}
+    })()
+    return () => { cancelled = true }
+  }, [mounted, coin.id])
+
+  const closes = useMemo(() => (history ? history.map(([, p]) => p) : []), [history])
+  const labelsFromHist = useMemo(() => (history ? history.map(([t]) => new Date(t).toLocaleDateString()) : []), [history])
+
+  // ---- Indicator helpers ----
+  const sma = (period: number, values: number[]) => values.map((_, i) => {
+    if (i + 1 < period) return NaN
+    const slice = values.slice(i + 1 - period, i + 1)
+    const sum = slice.reduce((a, b) => a + b, 0)
+    return sum / period
+  })
+  const ema = (period: number, values: number[]) => {
+    if (values.length === 0) return []
+    const k = 2 / (period + 1)
+    const out: number[] = []
+    let prev = values[0]
+    out.push(prev)
+    for (let i = 1; i < values.length; i++) {
+      const v = values[i] * k + prev * (1 - k)
+      out.push(v)
+      prev = v
+    }
+    return out
+  }
+  const rsi = (period: number, values: number[]) => {
+    if (values.length < period + 1) return []
+    const gains: number[] = []
+    const losses: number[] = []
+    for (let i = 1; i < values.length; i++) {
+      const diff = values[i] - values[i - 1]
+      gains.push(Math.max(0, diff))
+      losses.push(Math.max(0, -diff))
+    }
+    const avgGain = sma(period, gains)
+    const avgLoss = sma(period, losses)
+    const rsiArr: number[] = []
+    for (let i = 0; i < avgGain.length; i++) {
+      const g = avgGain[i]
+      const l = avgLoss[i]
+      if (!isFinite(g) || !isFinite(l)) { rsiArr.push(NaN); continue }
+      const rs = l === 0 ? 100 : g / l
+      const val = 100 - 100 / (1 + rs)
+      rsiArr.push(val)
+    }
+    const pad = new Array(values.length - rsiArr.length).fill(NaN)
+    return pad.concat(rsiArr)
+  }
+  const bollinger = (period: number, mult: number, values: number[]) => {
+    const ma = sma(period, values)
+    const upper: number[] = []
+    const lower: number[] = []
+    for (let i = 0; i < values.length; i++) {
+      if (i + 1 < period) { upper.push(NaN); lower.push(NaN); continue }
+      const win = values.slice(i + 1 - period, i + 1)
+      const mean = ma[i]
+      const variance = win.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / period
+      const sd = Math.sqrt(variance)
+      upper.push(mean + mult * sd)
+      lower.push(mean - mult * sd)
+    }
+    return { ma, upper, lower }
+  }
 
   const overallStars = analysis ? calculateOverallRating(analysis.ratings) : 0
 
-  // Build simple line datasets for TA (price with MAs and Bollinger bands)
+  // Build datasets for TA from real history
   const taData = useMemo(() => {
-    const labels = Array.from({ length: 30 }, (_, i) => `D-${30 - i}`)
-    const base = coin.current_price || 100
-    const prices = labels.map((_, i) => base * (1 + Math.sin(i / 6) * 0.05))
-    const ma50 = labels.map(() => mock.ma50)
-    const ma200 = labels.map(() => mock.ma200)
-    const bbUpper = labels.map(() => mock.bbUpper)
-    const bbLower = labels.map(() => mock.bbLower)
+    const labels = labelsFromHist.slice(-60)
+    const prices = closes.slice(-60)
+    if (prices.length === 0) {
+      return { labels: [], datasets: [] as any[] }
+    }
+    const ma50Arr = sma(50, prices)
+    const ma200Arr = sma(200, prices)
+    const bb = bollinger(20, 2, prices)
     return {
       labels,
       datasets: [
-        {
-          label: 'Price',
-          data: prices,
-          borderColor: '#22d3ee',
-          backgroundColor: 'rgba(34,211,238,0.15)',
-          fill: false,
-          tension: 0.3,
-        },
-        {
-          label: 'MA 50',
-          data: ma50,
-          borderColor: '#60a5fa',
-          borderDash: [6, 6],
-          fill: false,
-          tension: 0.2,
-        },
-        {
-          label: 'MA 200',
-          data: ma200,
-          borderColor: '#a78bfa',
-          borderDash: [4, 6],
-          fill: false,
-          tension: 0.2,
-        },
-        {
-          label: 'BB Upper',
-          data: bbUpper,
-          borderColor: 'rgba(99, 102, 241, 0.6)',
-          borderWidth: 1,
-          fill: '+1',
-        },
-        {
-          label: 'BB Lower',
-          data: bbLower,
-          borderColor: 'rgba(99, 102, 241, 0.6)',
-          borderWidth: 1,
-          backgroundColor: 'rgba(99, 102, 241, 0.08)',
-          fill: '-1',
-        },
+        { label: 'Price', data: prices, borderColor: '#22d3ee', backgroundColor: 'rgba(34,211,238,0.15)', fill: false, tension: 0.3 },
+        { label: 'MA 50', data: ma50Arr, borderColor: '#60a5fa', borderDash: [6, 6], fill: false, tension: 0.2 },
+        { label: 'MA 200', data: ma200Arr, borderColor: '#a78bfa', borderDash: [4, 6], fill: false, tension: 0.2 },
+        { label: 'BB Upper', data: bb.upper, borderColor: 'rgba(99, 102, 241, 0.6)', borderWidth: 1, fill: '+1' as any },
+        { label: 'BB Lower', data: bb.lower, borderColor: 'rgba(99, 102, 241, 0.6)', borderWidth: 1, backgroundColor: 'rgba(99, 102, 241, 0.08)', fill: '-1' as any },
       ],
     }
-  }, [coin.current_price, mock.bbLower, mock.bbUpper, mock.ma200, mock.ma50])
+  }, [labelsFromHist, closes])
 
-  // Sentiment bar over 7 days
-  const sentimentBar = useMemo(() => ({
-    labels: ['-6d', '-5d', '-4d', '-3d', '-2d', '-1d', 'Today'],
-    datasets: [
-      {
-        label: 'Sentiment (−100..100)',
-        data: (Array.isArray(mock.sentiment7d) ? mock.sentiment7d : [0,0,0,0,0,0,0]).map(v => (typeof v === 'number' ? v : 0)),
-        backgroundColor: (Array.isArray(mock.sentiment7d) ? mock.sentiment7d : [0,0,0,0,0,0,0]).map(v => (v >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)')),
-      },
-    ],
-  }), [mock.sentiment7d])
+  // Sentiment chart from analysis (Twitter / Reddit / Overall)
+  const sentimentBar = useMemo(() => {
+    const tw = analysis?.social_sentiment?.twitter_score ?? 0
+    const rd = analysis?.social_sentiment?.reddit_score ?? 0
+    const ov = analysis?.social_sentiment?.overall_score ?? 0
+    const vals = [tw, rd, ov]
+    return {
+      labels: ['Twitter', 'Reddit', 'Overall'],
+      datasets: [
+        { label: 'Sentiment (−100..100)', data: vals, backgroundColor: vals.map(v => (v >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)')) },
+      ],
+    }
+  }, [analysis?.social_sentiment])
 
-  // Prediction charts
+  // Prediction probabilities derived from sentiment (if no explicit probabilities)
+  const probs = useMemo(() => {
+    const s = analysis?.ratings?.sentiment ?? 0
+    const bull = Math.max(10, Math.min(80, 50 + s * 0.3))
+    const bear = Math.max(10, Math.min(80, 50 - s * 0.3))
+    const neu = Math.max(0, 100 - bull - bear)
+    return { bull, neu, bear }
+  }, [analysis?.ratings?.sentiment])
   const predictionPie = useMemo(() => ({
     labels: ['Bullish', 'Neutral', 'Bearish'],
     datasets: [
-      {
-        data: [mock.predictions.bullish.prob, mock.predictions.neutral.prob, mock.predictions.bearish.prob],
-        backgroundColor: ['#22c55e', '#38bdf8', '#ef4444'],
-      },
+      { data: [probs.bull, probs.neu, probs.bear], backgroundColor: ['#22c55e', '#38bdf8', '#ef4444'] },
     ],
-  }), [mock.predictions])
+  }), [probs])
 
   const projectionLine = useMemo(() => {
     const base = coin.current_price || 100
-    const labels = ['Now', '1w', '1m', '1y']
-    const path = (pct: number) => [base, base * (1 + pct), base * (1 + pct * 2), base * (1 + pct * 4)]
+    const labels = ['Now', '1w', '1m', '3m']
+    const p = analysis?.price_prediction as any
+    const s = p?.short_term?.target ?? base
+    const m = p?.medium_term?.target ?? base
+    const l = p?.long_term?.target ?? base
     return {
       labels,
-      datasets: [
-        { label: 'Bullish', data: path(mock.predictions.bullish.changePct), borderColor: '#22c55e' },
-        { label: 'Neutral', data: path(mock.predictions.neutral.changePct), borderColor: '#38bdf8' },
-        { label: 'Bearish', data: path(mock.predictions.bearish.changePct), borderColor: '#ef4444' },
-      ],
+      datasets: [ { label: 'Trajectory', data: [base, s, m, l], borderColor: '#22c55e' } ],
     }
-  }, [coin.current_price, mock.predictions])
+  }, [coin.current_price, analysis?.price_prediction])
 
   return (
     <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
@@ -211,8 +240,8 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Technical Analysis</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">RSI (14)</span><div className="text-white font-semibold">{mock.rsi}</div></div>
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">MACD (12,26,9)</span><div className="text-white font-semibold">{mock.macd}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">RSI (14)</span><div className="text-white font-semibold">{(() => { const rs = rsi(14, closes); const last = rs[rs.length - 1]; return isFinite(last) ? Math.round(last) : '—' })()}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">EMA(50) vs Price</span><div className="text-white font-semibold">{(() => { const e = ema(50, closes); const last = e[e.length - 1]; return isFinite(last) ? `${formatPrice(last)}` : '—' })()}</div></div>
           </div>
           <div className="h-64">
             <Line
@@ -264,18 +293,9 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Price Prediction</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5">
-              <span className="text-gray-400">Bullish (1w)</span>
-              <div className="text-white font-semibold">+{Math.round(mock.predictions.bullish.changePct * 100)}% • {mock.predictions.bullish.prob}%</div>
-            </div>
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5">
-              <span className="text-gray-400">Neutral (1w)</span>
-              <div className="text-white font-semibold">0% • {mock.predictions.neutral.prob}%</div>
-            </div>
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5">
-              <span className="text-gray-400">Bearish (1w)</span>
-              <div className="text-white font-semibold">{Math.round(mock.predictions.bearish.changePct * 100)}% • {mock.predictions.bearish.prob}%</div>
-            </div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Short Term</span><div className="text-white font-semibold">{analysis?.price_prediction?.short_term ? `${(analysis.price_prediction.short_term.pct).toFixed(2)}% → ${formatPrice(analysis.price_prediction.short_term.target)}` : '—'}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Medium Term</span><div className="text-white font-semibold">{analysis?.price_prediction?.medium_term ? `${(analysis.price_prediction.medium_term.pct).toFixed(2)}% → ${formatPrice(analysis.price_prediction.medium_term.target)}` : '—'}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Long Term</span><div className="text-white font-semibold">{analysis?.price_prediction?.long_term ? `${(analysis.price_prediction.long_term.pct).toFixed(2)}% → ${formatPrice(analysis.price_prediction.long_term.target)}` : '—'}</div></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="h-64 bg-black/10 rounded">
