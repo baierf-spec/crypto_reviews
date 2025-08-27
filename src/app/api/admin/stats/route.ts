@@ -1,24 +1,4 @@
 import { NextResponse } from 'next/server'
-import { getAllAnalysesFromMemory } from '@/lib/analyses'
-import { getTopCoins } from '@/lib/apis'
-
-export async function GET() {
-  try {
-    const analyses = getAllAnalysesFromMemory()
-    const coins = await getTopCoins(10)
-    return NextResponse.json({
-      success: true,
-      totalAnalyses: analyses.length,
-      totalCoins: coins.length,
-      lastGenerated: analyses[0]?.date || null,
-      activeUsers: 0,
-    })
-  } catch (e) {
-    return NextResponse.json({ success: true, totalAnalyses: 0, totalCoins: 0, lastGenerated: null, activeUsers: 0 })
-  }
-}
-
-import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { getAllAnalysesFromMemory } from '@/lib/analyses'
 
