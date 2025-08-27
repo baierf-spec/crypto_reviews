@@ -98,7 +98,20 @@ export async function saveAnalysis(analysis: any) {
       .from('analyses')
       .upsert([{ ...rest, date: new Date().toISOString() }], { onConflict: 'coin_id' })
 
-    if (error) throw error
+    if (error) {
+      // If the table is missing a unique constraint on coin_id, the upsert will fail.
+      // Fallback to delete+insert to guarantee overwrite semantics.
+      console.log('Upsert failed, attempting delete+insert fallback:', error)
+      try {
+        await client.from('analyses').delete().eq('coin_id', (rest as any).coin_id)
+        const { error: insErr } = await client
+          .from('analyses')
+          .insert([{ ...rest, date: new Date().toISOString() }])
+        if (insErr) throw insErr
+      } catch (fallbackErr) {
+        throw fallbackErr
+      }
+    }
     return true
   } catch (error) {
     console.log('Supabase saveAnalysis failed:', error)

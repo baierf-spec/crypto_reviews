@@ -12,7 +12,10 @@ export async function POST(request: NextRequest) {
     console.log(`Starting bulk analysis generation for ${limit} coins`)
 
     // Get top coins from CoinGecko
-    const coins = await getTopCoins(limit)
+    // Fetch a large pool from CMC, then sample randomly for diversity
+    const pool = await getTopCoins(Math.max(500, limit * 5))
+    const shuffled = [...pool].sort(() => Math.random() - 0.5)
+    const coins = shuffled.slice(0, limit)
     
     if (!coins || coins.length === 0) {
       return NextResponse.json(

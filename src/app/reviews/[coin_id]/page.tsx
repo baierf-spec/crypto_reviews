@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { useLivePrice } from '@/hooks/useLivePrice'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import { getCoinData } from '@/lib/apis'
+import { getCoinData, getTopCoins } from '@/lib/apis'
 import { getAnalysisByCoinId } from '@/lib/supabase'
 import PriceChart from '@/components/PriceChart'
 import RatingStars from '@/components/RatingStars'
@@ -52,10 +52,30 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function CoinReviewPage({ params }: PageProps) {
   try {
     console.log('[reviews/[coin_id]] start', { coin_id: params.coin_id })
-    const coin = await getCoinData(params.coin_id)
+    let coin = await getCoinData(params.coin_id)
     if (!coin) {
-      console.warn('[reviews/[coin_id]] coin not found', { coin_id: params.coin_id })
-      notFound()
+      console.warn('[reviews/[coin_id]] coin not found; trying fallback pool', { coin_id: params.coin_id })
+      try {
+        const pool = await getTopCoins(2000)
+        const found = pool.find(c => c.id === params.coin_id)
+        if (found) {
+          coin = found as any
+        }
+      } catch (_) {}
+    }
+    if (!coin) {
+      // As a last resort, create a minimal placeholder so the page still renders
+      const prettyName = params.coin_id.replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase())
+      coin = {
+        id: params.coin_id,
+        name: prettyName,
+        symbol: params.coin_id.slice(0, 3).toUpperCase(),
+        image: '/favicon.ico',
+        current_price: 0,
+        market_cap: 0,
+        total_volume: 0,
+        price_change_percentage_24h: 0,
+      } as any
     }
 
     let analysis = null as Awaited<ReturnType<typeof getAnalysisByCoinId>> | null
