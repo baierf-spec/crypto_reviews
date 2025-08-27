@@ -51,9 +51,21 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
       </div>
 
       {/* Compact Stats Row */}
-      <div className="flex items-center justify-between text-xs text-gray-400 border-t border-white/5 pt-3 mb-4">
-        <span>MC: <span className="text-white">{formatMarketCap(coin.market_cap)}</span></span>
-        <span>Vol: <span className="text-white">{formatMarketCap(coin.total_volume)}</span></span>
+      <div className="border-t border-white/5 pt-3 mb-4">
+        <div className="grid grid-cols-3 gap-2 text-xs text-gray-400">
+          <div>
+            <div className="uppercase tracking-wide">MC</div>
+            <div className="text-white font-medium">{formatMarketCap(coin.market_cap)}</div>
+          </div>
+          <div>
+            <div className="uppercase tracking-wide">Vol (24h)</div>
+            <div className="text-white font-medium">{formatMarketCap(coin.total_volume)}</div>
+          </div>
+          <div>
+            <div className="uppercase tracking-wide">Rank</div>
+            <div className="text-white font-medium">#{coin.market_cap_rank || '—'}</div>
+          </div>
+        </div>
       </div>
 
       {/* AI Analysis Section */}
@@ -84,15 +96,13 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
             </div>
           </div>
 
-          <p className="text-gray-300 text-sm line-clamp-2">
-            {analysis.content.replace(/\s+/g, ' ').slice(0, 180)}...
-          </p>
+          {/* Removed verbose content snippet for a cleaner, professional card */}
 
           <Link
             href={`/${coin.id}/price-prediction/`}
             className="block w-full bg-crypto-accent hover:bg-crypto-accent/90 text-white text-center py-2 px-4 rounded-lg transition-colors text-sm font-medium"
           >
-            Read Full Analysis
+            View Price Prediction
           </Link>
         </div>
       ) : (
