@@ -3,7 +3,8 @@ import { getTopCoins } from '@/lib/apis'
 import { getAllAnalysesFromMemory } from '@/lib/analyses'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  // Use canonical production domain by default so search engines get absolute URLs
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://www.crypto-ai-insights.com').replace(/\/$/, '')
   
   // Static pages
   const staticPages = [
@@ -13,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily' as const,
       priority: 1,
     },
+    // Home with trailing slash
     {
       url: `${baseUrl}/`,
       lastModified: new Date(),
