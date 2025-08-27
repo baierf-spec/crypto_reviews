@@ -7,6 +7,8 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
     console.error('Client error in coin review route:', error)
   }, [error])
 
+  const showDebug = process.env.NEXT_PUBLIC_DEBUG_ERRORS === '1'
+
   return (
     <div className="min-h-[40vh] flex flex-col items-center justify-center text-center px-4">
       <h2 className="text-2xl font-bold text-white mb-2">Something went wrong</h2>
@@ -18,6 +20,15 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         Try again
       </button>
       <p className="text-xs text-gray-500 mt-3">Not financial advice. Experimental features may be unstable.</p>
+      {showDebug && (
+        <div className="mt-4 max-w-3xl text-left">
+          <p className="text-xs text-yellow-400 mb-1">Debug (client only):</p>
+          <pre className="text-xs text-gray-300 whitespace-pre-wrap break-words bg-black/30 p-3 rounded">
+{`message: ${error?.message || 'n/a'}
+digest: ${error?.digest || 'n/a'}`}
+          </pre>
+        </div>
+      )}
     </div>
   )
 }
