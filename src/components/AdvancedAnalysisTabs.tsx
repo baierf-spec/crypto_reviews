@@ -53,7 +53,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch(`/api/coins/${coin.id}/history?days=90`).catch(() => null)
+        const res = await fetch(`/api/coins/${encodeURIComponent(coin.id)}/history?days=90`).catch(() => null)
         if (!res || !res.ok) return
         const json = await res.json()
         if (!cancelled) setHistory(Array.isArray(json.prices) ? json.prices : null)
