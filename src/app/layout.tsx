@@ -68,6 +68,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
+        <meta name="google-site-verification" content="dOu1X4i_JOc_6f69gPDVuQWG5qBEJKufkQIAyNL_qQE" />
       </head>
       <body className={inter.className}>
         <div className="min-h-screen bg-gradient-to-br from-crypto-dark via-crypto-secondary to-crypto-dark">
