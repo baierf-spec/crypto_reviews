@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 interface Props {
-  symbol: string
+  symbol: string // coin symbol like BTC, ETH, THETA
   height?: number
 }
 
@@ -20,7 +20,7 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
         // @ts-ignore
         new window.TradingView.widget({
           autosize: true,
-          symbol: symbol.toUpperCase(),
+          symbol: `BINANCE:${symbol.toUpperCase()}USDT`,
           interval: '60',
           timezone: 'Etc/UTC',
           theme: 'dark',

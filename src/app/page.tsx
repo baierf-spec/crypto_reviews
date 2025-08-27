@@ -7,7 +7,7 @@ import FeaturesSection from '@/components/FeaturesSection'
 import RatingStars from '@/components/RatingStars'
 import { getLatestAnalyses } from '@/lib/supabase'
 import { getTopCoins } from '@/lib/apis'
-import { calculateOverallRating, formatPercentage, formatPrice, truncateText } from '@/lib/utils'
+import { calculateOverallRating, formatPercentage, formatPrice, truncateText, formatMarketCap } from '@/lib/utils'
 import { Analysis, Coin } from '@/types'
 
 export const metadata: Metadata = {
@@ -183,11 +183,23 @@ async function LatestProfessionalReviews() {
             </div>
           </div>
 
-          {/* Middle row */}
-          <div className="mt-3 space-y-2">
-            <p className="text-gray-300 text-sm min-h-[1.5rem]">
-              {truncateText(analysis?.content?.replace(/\n/g, ' ') || 'AI summary not available yet. Check back soon for insights.', 100)}
-            </p>
+          {/* Middle row (stats + overall rating) */}
+          <div className="mt-3 space-y-3">
+            {/* Compact metrics instead of description */}
+            <div className="grid grid-cols-3 gap-2 text-[11px] text-gray-400">
+              <div>
+                <div className="uppercase tracking-wide">MC</div>
+                <div className="text-white font-medium">{formatMarketCap(coin.market_cap)}</div>
+              </div>
+              <div>
+                <div className="uppercase tracking-wide">Vol (24h)</div>
+                <div className="text-white font-medium">{formatMarketCap(coin.total_volume)}</div>
+              </div>
+              <div>
+                <div className="uppercase tracking-wide">Rank</div>
+                <div className="text-white font-medium">#{coin.market_cap_rank || '—'}</div>
+              </div>
+            </div>
             <div className="flex items-center">
               <RatingStars rating={calculateOverallRating(analysis ? analysis.ratings : { sentiment: 0, onChain: 50, eco: 5 })} size="sm" />
             </div>
