@@ -1,11 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { type PropsWithChildren } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { PluggableList } from 'unified'
 
-class MarkdownErrorBoundary extends React.Component<{ fallback: React.ReactNode }, { hasError: boolean }> {
+class MarkdownErrorBoundary extends React.Component<PropsWithChildren<{ fallback: React.ReactNode }>, { hasError: boolean }> {
   constructor(props: any) {
     super(props)
     this.state = { hasError: false }
