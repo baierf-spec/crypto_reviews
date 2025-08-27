@@ -80,6 +80,8 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-crypto-primary py-8 px-4 sm:px-6 lg:px-8">
+      {/* noindex for admin */}
+      <meta name="robots" content="noindex,nofollow" />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
