@@ -48,12 +48,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CoinReviewPage({ params }: PageProps) {
   try {
+    console.log('[reviews/[coin_id]] start', { coin_id: params.coin_id })
     const coin = await getCoinData(params.coin_id)
     if (!coin) {
+      console.warn('[reviews/[coin_id]] coin not found', { coin_id: params.coin_id })
       notFound()
     }
 
-    const analysis = await getAnalysisByCoinId(params.coin_id)
+    let analysis = null as Awaited<ReturnType<typeof getAnalysisByCoinId>> | null
+    try {
+      analysis = await getAnalysisByCoinId(params.coin_id)
+    } catch (e) {
+      console.error('[reviews/[coin_id]] getAnalysisByCoinId failed', e)
+      analysis = null
+    }
+    console.log('[reviews/[coin_id]] fetched', {
+      coin: {
+        id: coin.id,
+        name: coin.name,
+        symbol: coin.symbol,
+        image: coin.image,
+      },
+      hasAnalysis: !!analysis,
+    })
 
     // Mock fallbacks if data missing
     const mock = {
@@ -90,8 +107,8 @@ export default async function CoinReviewPage({ params }: PageProps) {
           <div className="rounded-lg p-6 bg-gradient-to-r from-crypto-secondary/60 to-crypto-secondary/30 border border-white/5 shadow-lg mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <Image src={coin.image} alt={coin.name} width={40} height={40} className="rounded-full" />
-                <h1 className="text-2xl font-bold text-white">{coin.name} ({coin.symbol.toUpperCase()})</h1>
+                <Image src={coin.image || '/favicon.ico'} alt={coin.name || params.coin_id} width={40} height={40} className="rounded-full" />
+                <h1 className="text-2xl font-bold text-white">{coin.name} ({coin.symbol?.toUpperCase?.() || coin.id?.toUpperCase?.()})</h1>
               </div>
               <div className="text-right">
                 <p className="text-xl font-semibold text-white">{formatPrice(price)}</p>
