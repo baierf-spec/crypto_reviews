@@ -53,6 +53,12 @@ export default function RequestReviewForm({ coin }: RequestReviewFormProps) {
         if (data && data.analysis_id) {
           setAnalysisId(data.analysis_id)
         }
+        // Persist analysis locally as fallback when DB is unavailable (serverless cold starts)
+        try {
+          if (data && data.analysis) {
+            localStorage.setItem(`analysis:${coin.id}`, JSON.stringify(data.analysis))
+          }
+        } catch (_) {}
         console.log('Review request successful:', data)
       } else {
         setError((data && data.error) || 'Failed to request review. Please try again.')

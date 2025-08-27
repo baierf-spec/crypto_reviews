@@ -62,6 +62,10 @@ export default async function CoinReviewPage({ params }: PageProps) {
       console.error('[reviews/[coin_id]] getAnalysisByCoinId failed', e)
       analysis = null
     }
+    if (!analysis) {
+      // server-side attempt to read client fallback if present via headers cookie (not available). Leave null.
+      console.log('[reviews/[coin_id]] no DB analysis; will rely on client fallback if any')
+    }
     console.log('[reviews/[coin_id]] fetched', {
       coin: {
         id: coin.id,
