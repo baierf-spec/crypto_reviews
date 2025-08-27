@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getTopCoins, getCoinData } from '@/lib/apis'
 import { saveAnalysis } from '@/lib/supabase'
+import { formatMarkdownToHtml } from '@/app/api/generate-review/route'
 import { saveAnalysisToMemory } from '@/lib/analyses'
 import { buildAnalysisFromCoin } from '@/lib/analysisGenerator'
 
@@ -52,15 +53,19 @@ export async function POST(request: NextRequest) {
           const freshCoin = await getCoinData(coin.id)
           const analysis = await buildAnalysisFromCoin(freshCoin || coin)
 
+          // Format markdown to HTML and mark format for consistent rendering
+          const formattedContent = formatMarkdownToHtml(analysis.content)
+          const formatted = { ...analysis, content: formattedContent, content_format: 'html' as const }
+
           // Save to database
           try {
-            await saveAnalysis(analysis)
+            await saveAnalysis(formatted)
           } catch (supabaseError) {
             console.log(`Supabase save failed for ${coin.name}:`, supabaseError)
           }
 
           // Always save to memory
-          saveAnalysisToMemory(analysis)
+          saveAnalysisToMemory(formatted as any)
 
           console.log(`Successfully generated analysis for ${coin.name}`)
           return { 
