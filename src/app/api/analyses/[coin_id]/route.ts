@@ -41,7 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: { coin_id: st
   }
 }
 
-import { NextRequest, NextResponse } from 'next/server'
+// removed duplicate import
 import { getAnalysisByCoinId } from '@/lib/supabase'
 
 export async function GET(
