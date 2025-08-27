@@ -3,8 +3,11 @@ import { getTopCoins } from '@/lib/apis'
 import { getAllAnalysesFromMemory } from '@/lib/analyses'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Use canonical production domain by default so search engines get absolute URLs
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://www.crypto-ai-insights.com').replace(/\/$/, '')
+  // Always use canonical domain in production to avoid stale env var values
+  const canonical = 'https://www.crypto-ai-insights.com'
+  const isProd = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
+  const resolved = isProd ? canonical : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
+  const baseUrl = resolved.replace(/\/$/, '')
   
   // Static pages
   const staticPages = [
