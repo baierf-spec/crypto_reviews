@@ -21,13 +21,13 @@ export default function LastReviewedInfo({ coinId, coinName, lastReviewed, hasAn
   const handleRequestNewReview = async () => {
     setIsRequesting(true)
     try {
-      // Smooth scroll to the request plans section on the same page
-      const el = document.getElementById('request-plans')
+      // Smooth scroll to the request section on the same page
+      const el = document.getElementById('request-review') || document.getElementById('request-plans')
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       } else {
-        // Fallback: use Next.js router navigation
-        router.push(`/reviews/${coinId}#request-plans`)
+        // Fallback: use Next.js router navigation (new SEO path)
+        router.push(`/${coinId}/price-prediction/#request-review`)
       }
     } catch (error) {
       console.error('Error requesting new review:', error)

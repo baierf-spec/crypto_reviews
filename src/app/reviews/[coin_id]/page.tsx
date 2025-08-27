@@ -127,6 +127,13 @@ export default async function CoinReviewPage({ params }: PageProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Main content 2/3 */}
             <div className="md:col-span-2 space-y-6">
+              {/* Last reviewed + CTA */}
+              <div className="bg-black/20 rounded-lg p-4 border border-white/5 flex items-center justify-between">
+                <div className="text-sm text-gray-400">
+                  Last Reviewed: <span className="text-white font-semibold">{analysis?.date ? new Date(analysis.date).toLocaleString() : 'Never'}</span>
+                </div>
+                <a href="#request-review" className="text-sm text-crypto-accent hover:underline">Request fresh review</a>
+              </div>
               {/* Price Chart */}
               <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
                 <h3 className="text-lg font-semibold text-white mb-4">7-Day Price</h3>
