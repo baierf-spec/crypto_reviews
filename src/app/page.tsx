@@ -232,7 +232,7 @@ async function LatestProfessionalReviews() {
 
           {/* CTA */}
           <div className="mt-5">
-            <Link href={`/reviews/${coin.id}`} className="block w-full text-center bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-md transition">
+            <Link href={`/${coin.id}/price-prediction/`} className="block w-full text-center bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-md transition">
               Read Full Analysis
             </Link>
           </div>

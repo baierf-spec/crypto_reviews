@@ -14,7 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: `${baseUrl}/reviews`,
+      url: `${baseUrl}/`,
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 0.9,
@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   
   // Create sitemap entries for each analysis
   const analysisPages = analyses.map((analysis) => ({
-    url: `${baseUrl}/reviews/${analysis.coin_id}`,
+    url: `${baseUrl}/${analysis.coin_id}/price-prediction/`,
     lastModified: new Date(analysis.date),
     changeFrequency: 'weekly' as const,
     priority: 0.7,
@@ -43,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const topCoins = await getTopCoins(100) // Get top 100 coins
     coinPages = topCoins.map((coin) => ({
-      url: `${baseUrl}/reviews/${coin.id}`,
+      url: `${baseUrl}/${coin.id}/price-prediction/`,
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 0.6,

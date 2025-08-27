@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   productionBrowserSourceMaps: true,
+  async redirects() {
+    return [
+      {
+        source: '/reviews/:coin',
+        destination: '/:coin/price-prediction/',
+        permanent: true,
+      },
+    ]
+  },
   images: {
     remotePatterns: [
       {

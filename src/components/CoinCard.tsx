@@ -89,7 +89,7 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
           </p>
 
           <Link
-            href={`/reviews/${coin.id}`}
+            href={`/${coin.id}/price-prediction/`}
             className="block w-full bg-crypto-accent hover:bg-crypto-accent/90 text-white text-center py-2 px-4 rounded-lg transition-colors text-sm font-medium"
           >
             Read Full Analysis
@@ -103,14 +103,14 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Link
-              href={`/reviews/${coin.id}`}
+              href={`/${coin.id}/price-prediction/`}
               className="w-full bg-yellow-600 hover:bg-yellow-700 text-white text-center py-2 px-3 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
             >
               <Zap className="w-4 h-4" />
               <span>Generate Now</span>
             </Link>
             <Link
-              href={`/reviews/${coin.id}`}
+              href={`/${coin.id}/price-prediction/`}
               className="w-full bg-crypto-primary/20 hover:bg-crypto-primary/30 text-crypto-accent py-2 px-3 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
             >
               <Clock className="w-4 h-4" />
