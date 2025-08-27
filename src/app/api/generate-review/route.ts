@@ -1,20 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { buildAnalysisFromCoin } from '@/lib/analysisGenerator'
 
-function formatMarkdownToHtml(md: string): string {
+export function formatMarkdownToHtml(md: string): string {
   try {
     let html = md || ''
+    // Normalize naked section lines to headings
+    html = html.replace(/^(Executive Summary|Market Position|Technical Overview|On-Chain Activity|On‑Chain Activity|Social Sentiment|Environmental Impact|Price Outlook|Risks|Bottom Line)\s*$/gmi, '## $1')
     // Headings -> styled (also handle ###)
     html = html.replace(/^###\s+(.+)$/gm, '<h3 class="text-xl font-semibold text-teal-300 mb-3">$1</h3>')
     // Headings ## Title -> h2 styled
     html = html.replace(/^##\s+(.+)$/gm, '<h2 class="text-2xl font-bold text-teal-400 mb-4">$1</h2>')
     // Bold *text* (single-line, non-greedy)
     html = html.replace(/\*(.*?)\*/g, '<strong>$1</strong>')
-    // Lists: lines starting with -
+    // Lists: lines starting with - (also bulletize paragraph blocks under Executive Summary)
     html = html.replace(/^(?:-\s+.+(?:\r?\n|$))+?/gm, (block) => {
       const items = block.trim().split(/\r?\n/).filter(Boolean)
       const lis = items.map(li => li.replace(/^-\s+(.+)/, '<li class="ml-4">$1</li>')).join('')
       return `<ul class="list-disc pl-5 mb-3">${lis}</ul>`
+    })
+    // Bulletize text immediately following Executive Summary until next heading
+    html = html.replace(/(<h2[^>]*>\s*Executive Summary\s*<\/h2>)([\s\S]*?)(?=<h2|$)/i, (m, h2, block) => {
+      if (/<ul|<ol|<table/.test(block)) return m
+      const lines = block.split(/\n+/).map(s => s.trim()).filter(Boolean)
+      if (lines.length === 0) return m
+      const lis = lines.map(s => `<li class="ml-4">${s}</li>`).join('')
+      return `${h2}<ul class="list-disc pl-5 mb-3">${lis}</ul>`
     })
     // Markdown-style table -> responsive table (but we do not allow "Key Metrics" section; it is rendered separately)
     html = html.replace(/^\|([^\n]+)\|\n\|[-\s|]+\|\n([\s\S]*?)\n(?=\n|$)/gm, (match: string, headerRow: string, bodyRows: string) => {

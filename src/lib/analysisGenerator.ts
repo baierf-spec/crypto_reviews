@@ -29,17 +29,15 @@ Tone & style:
 Structure (use these headings exactly):
 1. Executive Summary
    - 2–3 bullets with the key takeaway, directional view (bullish/neutral/bearish), and major risks.
-2. Key Metrics
-   - A compact table with: Current Price, Market Cap, 24h Change, 24h Tx, Whale Activity, Network Growth, Twitter Score, Reddit Score, Eco Rating.
-3. Market Position
-4. Technical Overview
-5. On‑Chain Activity
-6. Social Sentiment
-7. Environmental Impact
-8. Price Outlook
+2. Market Position
+3. Technical Overview
+4. On‑Chain Activity
+5. Social Sentiment
+6. Environmental Impact
+7. Price Outlook
    - Short, Medium, Long term bullet targets aligned with provided predictions.
-9. Risks
-10. Bottom Line
+8. Risks
+9. Bottom Line
 
 Additionally include a short appendix with:
 - Technical Analysis snapshot: RSI(14), MACD(12,26,9), 50/200-day MAs, Bollinger Bands context.
@@ -59,7 +57,7 @@ Formatting rules (STRICT):
 - Use single asterisks for bold emphasis like *Important* (no underscores, no HTML).
 - Use hyphen-space for list items: "- item"; keep lists concise.
 - Do not emit HTML; only Markdown primitives above.
-- Use a tidy Markdown table for Key Metrics. Do not wrap numbers in code blocks.
+- Do NOT include a section titled "Key Metrics"; the app renders metrics separately.
 - Avoid speculative claims; tie claims to the numbers given.
 `
 
@@ -69,17 +67,6 @@ Formatting rules (STRICT):
       `- ${coin.name} shows ${sentimentData.overall_score >= 10 ? 'a cautiously bullish' : sentimentData.overall_score <= -10 ? 'a cautious bearish' : 'a neutral'} setup with notable ${onChainData.network_growth}% network growth.\n` +
       `- Key risks: sentiment swings (${sentimentData.twitter_score} Twitter), liquidity, and macro.\n` +
       `- Eco rating ${ecoRating}/10.\n\n` +
-      `## Key Metrics\n` +
-      `| Metric | Value |\n|---|---|\n` +
-      `| Current Price | $${coin.current_price} |\n` +
-      `| Market Cap | $${coin.market_cap.toLocaleString()} |\n` +
-      `| 24h Change | ${coin.price_change_percentage_24h}% |\n` +
-      `| 24h Tx | ${onChainData.transactions_24h.toLocaleString()} |\n` +
-      `| Whale Activity | ${onChainData.whale_activity} |\n` +
-      `| Network Growth | ${onChainData.network_growth}% |\n` +
-      `| Twitter | ${sentimentData.twitter_score} |\n` +
-      `| Reddit | ${sentimentData.reddit_score} |\n` +
-      `| Eco | ${ecoRating}/10 |\n\n` +
       `## Market Position\n` +
       `${coin.name} remains a prominent asset with active volumes and broad recognition.\n\n` +
       `## Technical Overview\n` +

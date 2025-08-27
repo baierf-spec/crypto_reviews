@@ -52,7 +52,42 @@ export default function AnalysisMarkdown({ content }: { content: string }) {
     }
   }
 
-  const normalizedContent = useMemo(() => stripKeyMetrics(normalizeInlineMetrics(content)), [content])
+  function normalizeHeadings(md: string): string {
+    try {
+      const headings = [
+        'Executive Summary',
+        'Market Position',
+        'Technical Overview',
+        'On-Chain Activity',
+        'On‑Chain Activity',
+        'Social Sentiment',
+        'Environmental Impact',
+        'Price Outlook',
+        'Risks',
+        'Bottom Line',
+      ]
+      for (const h of headings) {
+        const re = new RegExp(`^(?:${h.replace(/[-/\\^$*+?.()|[\]{}]/g, r => `\\${r}`)})\s*$`, 'gmi')
+        md = md.replace(re, `## ${h}`)
+      }
+      // Bulletize Executive Summary lines if not already list items
+      md = md.replace(/(^##\s*Executive Summary\s*$)([\s\S]*?)(?=^##\s|$)/gmi, (_, h2: string, block: string) => {
+        const lines = block.split(/\n/)
+        const fixed = lines
+          .map(l => l.trim())
+          .filter(l => l.length > 0)
+          .map(l => (l.startsWith('- ') ? l : `- ${l}`))
+          .join('\n')
+        return `${h2}\n\n${fixed}\n\n`
+      })
+      return md
+    } catch { return md }
+  }
+
+  const normalizedContent = useMemo(
+    () => normalizeHeadings(stripKeyMetrics(normalizeInlineMetrics(content))),
+    [content]
+  )
 
   // Apply Tailwind styles to markdown tables
   const components: Partial<Components> = {
