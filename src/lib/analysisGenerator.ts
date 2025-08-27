@@ -54,8 +54,11 @@ Facts you must use:
 - Sentiment: Twitter ${sentimentData.twitter_score}, Reddit ${sentimentData.reddit_score}, Overall ${sentimentData.overall_score}
 - Environmental Rating: ${ecoRating}/10
 
-Formatting rules:
-- Use h2 (##) for main sections; bold labels for key numbers.
+Formatting rules (STRICT):
+- Use h2 with double hash only: lines starting with "## ".
+- Use single asterisks for bold emphasis like *Important* (no underscores, no HTML).
+- Use hyphen-space for list items: "- item"; keep lists concise.
+- Do not emit HTML; only Markdown primitives above.
 - Use a tidy Markdown table for Key Metrics. Do not wrap numbers in code blocks.
 - Avoid speculative claims; tie claims to the numbers given.
 `

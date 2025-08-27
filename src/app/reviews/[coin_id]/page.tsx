@@ -138,7 +138,11 @@ export default async function CoinReviewPage({ params }: PageProps) {
               {analysis && typeof analysis.content === 'string' && (
                 <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
                   <h3 className="text-lg font-semibold text-white mb-3">Full Analysis</h3>
-                  <AnalysisMarkdown content={analysis.content || 'Analysis content is not available yet.'} />
+                  {analysis && (analysis as any).content_format === 'html' ? (
+                    <FormattedText html={(analysis as any).content} />
+                  ) : (
+                    <AnalysisMarkdown content={analysis?.content || 'Analysis content is not available yet.'} />
+                  )}
                 </div>
               )}
 
@@ -200,4 +204,16 @@ function EcoBadge({ value }: { value: number }) {
   else if (value >= 6) { label = 'Good'; cls = 'text-green-300' }
   else if (value < 4) { label = 'Poor'; cls = 'text-red-400' }
   return <span className={`font-semibold ${cls}`}>{label}</span>
+}
+
+function FormattedText({ html }: { html: string }) {
+  if (!html) {
+    return <div className="text-gray-400">Loading formatted content...</div>
+  }
+  return (
+    <div
+      className="prose prose-invert max-w-none prose-h2:text-2xl prose-p:text-gray-300"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  )
 }
