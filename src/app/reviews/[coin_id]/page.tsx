@@ -135,12 +135,12 @@ export default async function CoinReviewPage({ params }: PageProps) {
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Article',
-            headline: `${coin.name} AI Analysis & Review | Price Prediction`,
-            about: coin.name,
+            headline: `${c.name} AI Analysis & Review | Price Prediction`,
+            about: c.name,
             datePublished: analysis?.date || new Date().toISOString(),
             author: { '@type': 'Organization', name: 'Crypto AI Insights' },
-            mainEntityOfPage: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.crypto-ai-insights.com'}/${coin.id}/price-prediction/`,
-            image: coin.image,
+            mainEntityOfPage: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.crypto-ai-insights.com'}/${c.id}/price-prediction/`,
+            image: c.image,
           }) }} />
           <div className="rounded-lg p-6 bg-gradient-to-r from-crypto-secondary/60 to-crypto-secondary/30 border border-white/5 shadow-lg mb-6">
             <div className="flex items-center justify-between">
