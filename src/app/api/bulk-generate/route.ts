@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getTopCoins } from '@/lib/apis'
+import { getTopCoins, getCoinData } from '@/lib/apis'
 import { saveAnalysis } from '@/lib/supabase'
 import { saveAnalysisToMemory } from '@/lib/analyses'
+import { buildAnalysisFromCoin } from '@/lib/analysisGenerator'
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
       const batch = coins.slice(i, i + batch_size)
       console.log(`Processing batch ${Math.floor(i / batch_size) + 1}/${Math.ceil(coins.length / batch_size)}`)
 
-      // Process batch concurrently
+      // Process batch concurrently without internal HTTP calls
       const batchPromises = batch.map(async (coin) => {
         try {
           // Check if analysis already exists
@@ -44,48 +45,26 @@ export async function POST(request: NextRequest) {
             return { coin_id: coin.id, status: 'skipped', reason: 'already_exists' }
           }
 
-          // Generate analysis
-          const analysisResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/generate-review`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              coin_id: coin.id,
-              coin_name: coin.name,
-              coin_symbol: coin.symbol,
-              current_price: coin.current_price,
-              market_cap: coin.market_cap,
-              price_change_24h: coin.price_change_percentage_24h,
-            }),
-          })
-
-          if (!analysisResponse.ok) {
-            throw new Error(`Analysis generation failed for ${coin.name}`)
-          }
-
-          const analysisData = await analysisResponse.json()
-          
-          if (!analysisData.success || !analysisData.data) {
-            throw new Error(`Invalid analysis response for ${coin.name}`)
-          }
+          // Ensure fresh coin data
+          const freshCoin = await getCoinData(coin.id)
+          const analysis = await buildAnalysisFromCoin(freshCoin || coin)
 
           // Save to database
           try {
-            await saveAnalysis(analysisData.data)
+            await saveAnalysis(analysis)
           } catch (supabaseError) {
             console.log(`Supabase save failed for ${coin.name}:`, supabaseError)
           }
 
           // Always save to memory
-          saveAnalysisToMemory(analysisData.data)
+          saveAnalysisToMemory(analysis)
 
           console.log(`Successfully generated analysis for ${coin.name}`)
           return { 
             coin_id: coin.id, 
             coin_name: coin.name,
             status: 'success', 
-            analysis_id: analysisData.data.id 
+            analysis_id: analysis.id 
           }
 
         } catch (error) {
