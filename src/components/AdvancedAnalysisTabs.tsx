@@ -1,7 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Line, Bar, Pie } from 'react-chartjs-2'
+import { useMemo, useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+const Line = dynamic(() => import('react-chartjs-2').then(m => m.Line), { ssr: false })
+const Bar = dynamic(() => import('react-chartjs-2').then(m => m.Bar), { ssr: false })
+const Pie = dynamic(() => import('react-chartjs-2').then(m => m.Pie), { ssr: false })
 import {
   Chart as ChartJS,
   LineElement,
@@ -40,6 +43,8 @@ interface AdvancedAnalysisTabsProps {
 
 export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysisTabsProps) {
   const [tab, setTab] = useState<TabKey>('overview')
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   // -------- Mock/derived data (replace with real API integrations) --------
   const mock = useMemo(() => ({
@@ -199,7 +204,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         </div>
       )}
 
-      {tab === 'ta' && (
+      {mounted && tab === 'ta' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Technical Analysis</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -223,7 +228,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         </div>
       )}
 
-      {tab === 'sentiment' && (
+      {mounted && tab === 'sentiment' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Sentiment & Social</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -252,7 +257,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         </div>
       )}
 
-      {tab === 'prediction' && (
+      {mounted && tab === 'prediction' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Price Prediction</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -293,5 +298,6 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
     </div>
   )
 }
+
 
 

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Line } from 'react-chartjs-2'
+import dynamic from 'next/dynamic'
+const Line = dynamic(() => import('react-chartjs-2').then(m => m.Line), { ssr: false })
 import {
   Chart as ChartJS,
   LineElement,
@@ -22,8 +23,10 @@ interface PriceChartProps {
 
 export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartProps) {
   const [series, setSeries] = useState<number[][] | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     let cancelled = false
     async function load() {
       try {
@@ -41,7 +44,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
     return () => { cancelled = true }
   }, [coinId])
 
-  if (!series) {
+  if (!mounted || !series) {
     return <div className="h-48 flex items-center justify-center text-gray-400">Loading chart...</div>
   }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Clock, RefreshCw, Sparkles, AlertCircle } from 'lucide-react'
 import { getTimeAgo } from '@/lib/utils'
 import Link from 'next/link'
@@ -15,6 +16,7 @@ interface LastReviewedInfoProps {
 export default function LastReviewedInfo({ coinId, coinName, lastReviewed, hasAnalysis }: LastReviewedInfoProps) {
   const [isRequesting, setIsRequesting] = useState(false)
   const plansRef = useRef<HTMLDivElement | null>(null)
+  const router = useRouter()
 
   const handleRequestNewReview = async () => {
     setIsRequesting(true)
@@ -24,8 +26,8 @@ export default function LastReviewedInfo({ coinId, coinName, lastReviewed, hasAn
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       } else {
-        // Fallback: redirect to anchor
-        window.location.href = `/reviews/${coinId}#request-plans`
+        // Fallback: use Next.js router navigation
+        router.push(`/reviews/${coinId}#request-plans`)
       }
     } catch (error) {
       console.error('Error requesting new review:', error)

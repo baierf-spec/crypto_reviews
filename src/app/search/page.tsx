@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Search, TrendingUp, TrendingDown } from 'lucide-react'
 import { formatPrice, formatPercentage } from '@/lib/utils'
 import { Coin } from '@/types'
 
 export default function SearchPage() {
+  const router = useRouter()
   const [coins, setCoins] = useState<Coin[]>([])
   const [filteredCoins, setFilteredCoins] = useState<Coin[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -130,7 +132,7 @@ export default function SearchPage() {
               <div
                 key={coin.id}
                 className="bg-crypto-secondary/50 backdrop-blur-sm border border-crypto-primary/20 rounded-lg p-4 hover:border-crypto-primary/40 transition-all duration-200 cursor-pointer"
-                onClick={() => window.location.href = `/reviews/${coin.id}`}
+                onClick={() => router.push(`/reviews/${coin.id}`)}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-3">
