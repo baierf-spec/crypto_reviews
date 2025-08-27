@@ -10,8 +10,8 @@ import RequestReviewForm from '@/components/RequestReviewForm'
 import AnalysisMarkdown from '@/components/AnalysisMarkdown'
 import AdvancedAnalysisTabs from '@/components/AdvancedAnalysisTabs'
 import { calculateOverallRating, formatPercentage, formatPrice, truncateText } from '@/lib/utils'
-import dynamic from 'next/dynamic'
-const ClientAnalysis = dynamic(() => import('@/components/ClientAnalysis'), { ssr: false })
+import nextDynamic from 'next/dynamic'
+const ClientAnalysis = nextDynamic(() => import('@/components/ClientAnalysis'), { ssr: false })
 
 interface PageProps {
   params: {
