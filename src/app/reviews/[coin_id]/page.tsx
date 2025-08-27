@@ -254,10 +254,18 @@ function FormattedText({ html }: { html: string }) {
   if (!html) {
     return <div className="text-gray-400">Loading formatted content...</div>
   }
+  // Remove Key Metrics section from server-formatted HTML (if present)
+  const cleaned = (() => {
+    try {
+      return html.replace(/<h2[^>]*>\s*Key Metrics\s*<\/h2>[\s\S]*?(?=<h2|$)/i, '')
+    } catch {
+      return html
+    }
+  })()
   return (
     <div
       className="prose prose-invert max-w-none prose-h2:text-2xl prose-p:text-gray-300"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: cleaned }}
     />
   )
 }

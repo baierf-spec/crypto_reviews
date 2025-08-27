@@ -272,6 +272,29 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Overview</h3>
           <p className="text-gray-300 text-sm">Full AI analysis and key metrics.</p>
+
+          {/* Styled Key Metrics table built from coin + analysis */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr>
+                  <th className="px-3 py-2 text-left text-gray-300">Metric</th>
+                  <th className="px-3 py-2 text-left text-gray-300">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-t border-white/10"><td className="px-3 py-2 text-gray-300">Current Price</td><td className="px-3 py-2 text-white/90">{formatPrice(coin.current_price)}</td></tr>
+                <tr className="border-t border-white/10"><td className="px-3 py-2 text-gray-300">Market Cap</td><td className="px-3 py-2 text-white/90">{formatPrice((coin as any).market_cap)}</td></tr>
+                <tr className="border-t border-white/10"><td className="px-3 py-2 text-gray-300">24h Change</td><td className="px-3 py-2"><span className={`font-semibold ${((coin as any).price_change_percentage_24h ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{((coin as any).price_change_percentage_24h ?? 0).toFixed(2)}%</span></td></tr>
+                <tr className="border-t border-white/10"><td className="px-3 py-2 text-gray-300">24h Tx</td><td className="px-3 py-2 text-white/90">{currentAnalysis?.on_chain_data?.transactions_24h != null ? (currentAnalysis.on_chain_data.transactions_24h).toLocaleString() : '—'}</td></tr>
+                <tr className="border-t border-white/10"><td className="px-3 py-2 text-gray-300">Whale Activity</td><td className="px-3 py-2 text-white/90">{currentAnalysis?.on_chain_data?.whale_activity ?? '—'}</td></tr>
+                <tr className="border-t border-white/10"><td className="px-3 py-2 text-gray-300">Network Growth</td><td className="px-3 py-2 text-white/90">{currentAnalysis?.ratings?.onChain != null ? `${currentAnalysis.ratings.onChain}%` : '—'}</td></tr>
+                <tr className="border-t border-white/10"><td className="px-3 py-2 text-gray-300">Twitter Score</td><td className="px-3 py-2 text-white/90">{currentAnalysis?.social_sentiment?.twitter_score ?? '—'}</td></tr>
+                <tr className="border-t border-white/10"><td className="px-3 py-2 text-gray-300">Reddit Score</td><td className="px-3 py-2 text-white/90">{currentAnalysis?.social_sentiment?.reddit_score ?? '—'}</td></tr>
+                <tr className="border-t border-white/10"><td className="px-3 py-2 text-gray-300">Eco Rating</td><td className="px-3 py-2 text-white/90">{currentAnalysis?.ratings?.eco != null ? `${currentAnalysis.ratings.eco}/10` : '—'}</td></tr>
+              </tbody>
+            </table>
+          </div>
           {currentAnalysis && (
             <div>
               <div className="flex items-center mb-3">
@@ -287,6 +310,8 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
                   return text ? `${text.slice(0, 280)}${text.length > 280 ? '…' : ''}` : 'AI analysis available below.'
                 })()}
               </p>
+              {/* Watchlist toggle (local) */}
+              <WatchlistButton coinId={coin.id} name={coin.name} />
             </div>
           )}
           {!currentAnalysis && (
@@ -434,6 +459,32 @@ function TAInsightBadge({ closes }: { closes: number[] }) {
     <div className="mt-2 text-xs text-gray-400 bg-black/20 rounded px-3 py-2 border border-white/5">
       {text}
     </div>
+  )
+}
+
+function WatchlistButton({ coinId, name }: { coinId: string; name: string }) {
+  const [isSaved, setIsSaved] = useState(false)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('watchlist')
+      if (!raw) return
+      const ids: string[] = JSON.parse(raw)
+      setIsSaved(ids.includes(coinId))
+    } catch (_) {}
+  }, [coinId])
+  const toggle = () => {
+    try {
+      const raw = localStorage.getItem('watchlist')
+      const ids: string[] = raw ? JSON.parse(raw) : []
+      const next = ids.includes(coinId) ? ids.filter(id => id !== coinId) : ids.concat(coinId)
+      localStorage.setItem('watchlist', JSON.stringify(next))
+      setIsSaved(next.includes(coinId))
+    } catch (_) {}
+  }
+  return (
+    <button onClick={toggle} className={`mt-3 text-xs px-3 py-1 rounded border ${isSaved ? 'text-teal-300 border-teal-400/40 bg-teal-400/10' : 'text-gray-300 border-white/10 hover:bg-white/5'}`}>
+      {isSaved ? 'Remove from Watchlist' : 'Add to Watchlist'}
+    </button>
   )
 }
 

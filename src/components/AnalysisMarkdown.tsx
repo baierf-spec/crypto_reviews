@@ -44,7 +44,15 @@ export default function AnalysisMarkdown({ content }: { content: string }) {
     }
   }
 
-  const normalizedContent = useMemo(() => normalizeInlineMetrics(content), [content])
+  function stripKeyMetrics(md: string): string {
+    try {
+      return md.replace(/##\s*Key Metrics[\s\S]*?(?=\n##\s|$)/i, '').trim()
+    } catch {
+      return md
+    }
+  }
+
+  const normalizedContent = useMemo(() => stripKeyMetrics(normalizeInlineMetrics(content)), [content])
 
   // Apply Tailwind styles to markdown tables
   const components: Partial<Components> = {
