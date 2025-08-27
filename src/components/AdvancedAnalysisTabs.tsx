@@ -301,15 +301,6 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
                 <RatingStars rating={overallStars} size="md" />
                 <span className="ml-3 text-gray-400 text-sm">Current Price: <span className="text-white font-semibold">{formatPrice(coin.current_price)}</span></span>
               </div>
-              <p className="text-gray-300 text-sm">
-                {(() => {
-                  const c: any = currentAnalysis
-                  const text = typeof c?.content === 'string'
-                    ? c.content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
-                    : ''
-                  return text ? `${text.slice(0, 280)}${text.length > 280 ? '…' : ''}` : 'AI analysis available below.'
-                })()}
-              </p>
               {/* Watchlist toggle (local) */}
               <WatchlistButton coinId={coin.id} name={coin.name} />
             </div>
