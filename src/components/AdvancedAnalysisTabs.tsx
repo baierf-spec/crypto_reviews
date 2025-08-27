@@ -124,6 +124,17 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
     return { ma, upper, lower }
   }
 
+  // MACD 12,26,9
+  const macdCalc = (fast = 12, slow = 26, signal = 9, values: number[]) => {
+    if (values.length === 0) return { macd: [], signal: [], hist: [] as number[] }
+    const emaFast = ema(fast, values)
+    const emaSlow = ema(slow, values)
+    const macd = values.map((_, i) => (emaFast[i] ?? NaN) - (emaSlow[i] ?? NaN))
+    const signalLine = ema(signal, macd)
+    const hist = macd.map((v, i) => v - (signalLine[i] ?? NaN))
+    return { macd, signal: signalLine, hist }
+  }
+
   const overallStars = analysis ? calculateOverallRating(analysis.ratings) : 0
 
   // Build datasets for TA from real history
@@ -136,6 +147,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
     const ma50Arr = sma(50, prices)
     const ma200Arr = sma(200, prices)
     const bb = bollinger(20, 2, prices)
+    const macd = macdCalc(12, 26, 9, prices)
     return {
       labels,
       datasets: [
@@ -144,6 +156,8 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         { label: 'MA 200', data: ma200Arr, borderColor: '#a78bfa', borderDash: [4, 6], fill: false, tension: 0.2 },
         { label: 'BB Upper', data: bb.upper, borderColor: 'rgba(99, 102, 241, 0.6)', borderWidth: 1, fill: '+1' as any },
         { label: 'BB Lower', data: bb.lower, borderColor: 'rgba(99, 102, 241, 0.6)', borderWidth: 1, backgroundColor: 'rgba(99, 102, 241, 0.08)', fill: '-1' as any },
+        { label: 'MACD', data: macd.macd, borderColor: '#10b981', hidden: true },
+        { label: 'Signal', data: macd.signal, borderColor: '#f59e0b', hidden: true },
       ],
     }
   }, [labelsFromHist, closes])
@@ -239,15 +253,23 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
       {mounted && tab === 'ta' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Technical Analysis</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-3 gap-4 text-sm">
             <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">RSI (14)</span><div className="text-white font-semibold">{(() => { const rs = rsi(14, closes); const last = rs[rs.length - 1]; return isFinite(last) ? Math.round(last) : '—' })()}</div></div>
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">EMA(50) vs Price</span><div className="text-white font-semibold">{(() => { const e = ema(50, closes); const last = e[e.length - 1]; return isFinite(last) ? `${formatPrice(last)}` : '—' })()}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">EMA(50)</span><div className="text-white font-semibold">{(() => { const e = ema(50, closes); const last = e[e.length - 1]; return isFinite(last) ? `${formatPrice(last)}` : '—' })()}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">50/200 Trend</span><div className="text-white font-semibold">{(() => { const s50 = sma(50, closes); const s200 = sma(200, closes); const a = s50[s50.length-1]; const b = s200[s200.length-1]; if (!isFinite(a)||!isFinite(b)) return '—'; return a>b?'Bullish':'Bearish' })()}</div></div>
           </div>
-          <div className="h-64">
+          <div className="h-72">
             <Line
               data={taData}
               options={{
-                plugins: { legend: { labels: { color: '#9CA3AF' } } },
+                plugins: {
+                  legend: { labels: { color: '#9CA3AF' } },
+                  tooltip: {
+                    callbacks: {
+                      label: (ctx: any) => `${ctx.dataset.label}: ${typeof ctx.parsed.y === 'number' ? ctx.parsed.y.toFixed(4) : ctx.parsed.y}`,
+                    },
+                  },
+                },
                 scales: {
                   x: { ticks: { color: '#9CA3AF' }, grid: { color: 'rgba(255,255,255,0.05)' } },
                   y: { ticks: { color: '#9CA3AF' }, grid: { color: 'rgba(255,255,255,0.05)' } },
@@ -256,6 +278,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
               }}
             />
           </div>
+          <TAInsightBadge closes={closes} />
           <p className="text-xs text-gray-500">Indicators are illustrative (mock). Use professional tools for trading decisions.</p>
         </div>
       )}
@@ -264,9 +287,9 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Sentiment & Social</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Tweet Volume</span><div className="text-white font-semibold">{mock.tweetVolume.toLocaleString()}</div></div>
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Reddit Upvotes</span><div className="text-white font-semibold">{mock.redditUpvotes.toLocaleString()}</div></div>
-            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Breakdown</span><div className="text-white font-semibold">+{mock.sentimentBreakdown.pos}% / {mock.sentimentBreakdown.neu}% / −{mock.sentimentBreakdown.neg}%</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Twitter Score</span><div className="text-white font-semibold">{analysis?.social_sentiment?.twitter_score ?? '—'}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Reddit Score</span><div className="text-white font-semibold">{analysis?.social_sentiment?.reddit_score ?? '—'}</div></div>
+            <div className="bg-black/20 rounded-md px-4 py-3 border border-white/5"><span className="text-gray-400">Overall</span><div className="text-white font-semibold">{analysis?.social_sentiment?.overall_score ?? '—'}</div></div>
           </div>
           <div className="h-64">
             <Bar
@@ -282,8 +305,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
             />
           </div>
           <div className="text-sm text-gray-300">
-            <p className="mb-1"><span className="text-white font-semibold">Top Hashtags:</span> {mock.hashtags.join(', ')}</p>
-            <p><span className="text-white font-semibold">Top Mentions:</span> {mock.mentions.join(', ')}</p>
+            <p className="mb-1"><span className="text-white font-semibold">Interpretation:</span> Positive values suggest bullish tone; negative values bearish.</p>
           </div>
           <p className="text-xs text-gray-500">Sentiment is aggregated for illustration only.</p>
         </div>
@@ -318,6 +340,49 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
           <p className="text-xs text-gray-500">Forecasts are scenario-based and not guarantees. Not financial advice.</p>
         </div>
       )}
+    </div>
+  )
+}
+
+function TAInsightBadge({ closes }: { closes: number[] }) {
+  const [text, setText] = useState<string | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        if (!closes || closes.length < 50) return
+        const last = closes[closes.length - 1]
+        const s50 = closes.slice(-50).reduce((a, b) => a + b, 0) / 50
+        const s200 = closes.length >= 200 ? closes.slice(-200).reduce((a,b)=>a+b,0)/200 : s50
+        const rsiVal = (() => {
+          const gains: number[] = []; const losses: number[] = []
+          for (let i = 1; i < closes.length; i++) {
+            const d = closes[i]-closes[i-1]; gains.push(Math.max(0,d)); losses.push(Math.max(0,-d))
+          }
+          const idx = gains.length - 14
+          if (idx < 0) return null
+          const g = gains.slice(-14).reduce((a,b)=>a+b,0)/14
+          const l = losses.slice(-14).reduce((a,b)=>a+b,0)/14
+          const rs = l === 0 ? 100 : g/l
+          return 100 - 100/(1+rs)
+        })()
+        const ema50VsPrice = s50 ? ((last - s50) / s50) * 100 : null
+        const trend = s50 > s200 ? 'up' : s50 < s200 ? 'down' : 'flat'
+        const bbState = 'neutral'
+        const res = await fetch(`/api/analyses/dummy`, { // coin id not used; endpoint summarizes generic
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rsi: rsiVal, ema50VsPrice, trend, bbState })
+        }).catch(()=>null)
+        const json = res && res.ok ? await res.json() : { summary: null }
+        if (!cancelled) setText(json.summary || null)
+      } catch (_) {}
+    })()
+    return () => { cancelled = true }
+  }, [closes])
+  if (!text) return null
+  return (
+    <div className="mt-2 text-xs text-gray-400 bg-black/20 rounded px-3 py-2 border border-white/5">
+      {text}
     </div>
   )
 }
