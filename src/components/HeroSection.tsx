@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { TrendingUp, Zap, Shield, BarChart3 } from 'lucide-react'
+import Link from 'next/link'
 
 export default function HeroSection() {
   return (
@@ -71,12 +72,18 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            <button className="bg-gradient-to-r from-crypto-primary to-crypto-accent text-white px-8 py-4 rounded-lg font-semibold text-lg hover:shadow-lg hover:shadow-crypto-primary/25 transition-all duration-200 transform hover:scale-105">
+            <Link
+              href="/reviews"
+              className="bg-gradient-to-r from-crypto-primary to-crypto-accent text-white px-8 py-4 rounded-lg font-semibold text-lg hover:shadow-lg hover:shadow-crypto-primary/25 transition-all duration-200 transform hover:scale-105 text-center"
+            >
               Explore Reviews
-            </button>
-            <button className="border-2 border-crypto-primary/50 text-crypto-primary px-8 py-4 rounded-lg font-semibold text-lg hover:bg-crypto-primary/10 transition-all duration-200">
+            </Link>
+            <Link
+              href="/about"
+              className="border-2 border-crypto-primary/50 text-crypto-primary px-8 py-4 rounded-lg font-semibold text-lg hover:bg-crypto-primary/10 transition-all duration-200 text-center"
+            >
               How It Works
-            </button>
+            </Link>
           </motion.div>
 
           {/* Features grid */}
