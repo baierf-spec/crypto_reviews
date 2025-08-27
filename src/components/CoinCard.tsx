@@ -2,11 +2,11 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { formatPrice, formatMarketCap, formatPercentage, getSentimentColor, getEcoColor, calculateOverallRating } from '@/lib/utils'
+import { formatPrice, formatMarketCap, formatPercentage, getSentimentColor, calculateOverallRating } from '@/lib/utils'
 import { useLivePrice } from '@/hooks/useLivePrice'
 import { Coin, Analysis } from '@/types'
 import RatingStars from './RatingStars'
-import EcoGauge from './EcoGauge'
+// Eco rating removed from Reviews listing
 import { TrendingUp, TrendingDown, Sparkles, Zap, Clock } from 'lucide-react'
 
 interface CoinCardProps {
@@ -19,7 +19,7 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
   const safeRatings = analysis?.ratings ?? { sentiment: 0, onChain: 50, eco: 5 }
   const sentimentStars = Math.max(0, Math.min(5, (safeRatings.sentiment + 100) / 200 * 5))
   const onChainStars = Math.max(0, Math.min(5, (safeRatings.onChain || 0) / 20))
-  const ecoStars = Math.max(0, Math.min(5, (safeRatings.eco || 0) / 2))
+  // const ecoStars = Math.max(0, Math.min(5, (safeRatings.eco || 0) / 2))
 
   return (
     <div className="bg-crypto-secondary/50 rounded-xl p-5 hover:bg-crypto-secondary/70 transition-colors border border-white/5">
@@ -85,7 +85,7 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
             <h4 className="text-sm font-medium text-gray-300">AI Analysis</h4>
             <RatingStars rating={calculateOverallRating(analysis.ratings)} size="sm" hint="Overall rating blends sentiment, on‑chain and eco scores." />
           </div>
-          <div className="grid grid-cols-3 gap-2 text-xs">
+          <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="text-center">
               <RatingStars rating={sentimentStars} size="sm" hint="Sentiment (−100..100) rescaled 0–5 stars. Higher = more bullish." />
               <p className="text-gray-400 mt-1">Sentiment</p>
@@ -96,13 +96,6 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
             <div className="text-center">
               <RatingStars rating={onChainStars} size="sm" hint="On‑Chain score (0..100) rescaled 0–5 stars from activity/growth/flows." />
               <p className="text-gray-400 mt-1">On-Chain</p>
-            </div>
-            <div className="text-center">
-              <EcoGauge rating={analysis.ratings.eco} />
-              <p className="text-gray-400 mt-1">Eco</p>
-              <p className={`text-[11px] ${getEcoColor(analysis.ratings.eco)}`}>
-                {analysis.ratings.eco >= 4 ? 'Green' : analysis.ratings.eco >= 2 ? 'Moderate' : 'High Impact'}
-              </p>
             </div>
           </div>
 
