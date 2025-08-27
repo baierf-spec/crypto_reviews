@@ -93,9 +93,10 @@ export async function saveAnalysis(analysis: any) {
     const client = getServerClient()
     // Do not send client-generated id to a UUID column; let DB generate it
     const { id: _ignoreId, ...rest } = analysis || {}
+    // Upsert on coin_id so we can refresh existing reviews
     const { error } = await client
       .from('analyses')
-      .insert([rest])
+      .upsert([{ ...rest, date: new Date().toISOString() }], { onConflict: 'coin_id' })
 
     if (error) throw error
     return true

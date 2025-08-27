@@ -31,10 +31,10 @@ export async function POST(request: NextRequest) {
     // Generate analysis directly (no internal HTTP)
     const analysis = await buildAnalysisFromCoin(coin)
 
-    // Save to database (non-blocking)
+    // Save to database (non-blocking, upsert by coin_id)
     try {
       await saveAnalysis(analysis)
-      console.log('Analysis saved to Supabase (insert requested).')
+      console.log('Analysis upserted to Supabase.')
     } catch (supabaseError) {
       console.log('Supabase save failed:', supabaseError)
     }
