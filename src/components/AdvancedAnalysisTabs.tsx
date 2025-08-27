@@ -48,6 +48,8 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
 
   // Try to hydrate analysis from API if not provided
   const [analysisState, setAnalysisState] = useState<Analysis | null>(analysis ?? null)
+  // Also consider a freshly generated local preview stored in localStorage
+  const [localPreview, setLocalPreview] = useState<Analysis | null>(null)
   useEffect(() => {
     if (analysis) return
     let cancelled = false
@@ -62,6 +64,27 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
     })()
     return () => { cancelled = true }
   }, [coin.id, analysis])
+
+  // Read local preview once mounted
+  useEffect(() => {
+    if (!mounted || analysis) return
+    try {
+      const raw = localStorage.getItem(`analysis:${coin.id}`)
+      if (!raw) return
+      const obj = JSON.parse(raw)
+      // Normalize shape to Analysis minimal subset
+      const normalized: any = {
+        coin_id: coin.id,
+        content: obj.content,
+        content_format: obj.content_format || 'md',
+        date: obj.date || new Date().toISOString(),
+        ratings: obj.ratings || { sentiment: 0, onChain: 0, eco: 0, overall: 0 },
+        price_prediction: obj.price_prediction || null,
+        social_sentiment: obj.social_sentiment || null,
+      }
+      setLocalPreview(normalized as Analysis)
+    } catch (_) {}
+  }, [mounted, coin.id, analysis])
 
   // -------- Real market history (TA) --------
   const [history, setHistory] = useState<number[][] | null>(null)
@@ -152,7 +175,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
     return { macd, signal: signalLine, hist }
   }
 
-  const currentAnalysis = analysisState || analysis || null
+  const currentAnalysis = analysisState || analysis || localPreview || null
   const overallStars = currentAnalysis ? calculateOverallRating(currentAnalysis.ratings) : 0
 
   // Build datasets for TA from real history
@@ -261,7 +284,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
               </p>
             </div>
           )}
-          {!analysis && (
+          {!currentAnalysis && (
             <p className="text-gray-400 text-sm">No AI analysis yet. Use Request Review to generate one.</p>
           )}
           <p className="text-xs text-gray-500">Educational content only. Not financial advice.</p>
