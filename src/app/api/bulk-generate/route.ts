@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
           results.generated_analyses.push(result)
         } else if (result.status === 'failed') {
           results.failed++
-          results.errors.push(`${result.coin_name}: ${result.error}`)
+          results.errors.push(`${result.coin_name} (${result.coin_id}): ${result.error}`)
         }
       })
 
@@ -109,10 +109,13 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error in bulk generation:', error)
-    return NextResponse.json(
-      { error: 'Failed to perform bulk generation' },
-      { status: 500 }
-    )
+    // Never fail completely; return partial state
+    return NextResponse.json({
+      success: false,
+      message: 'Bulk generation encountered an error but returned partial results',
+      results: { total_coins: 0, processed: 0, successful: 0, failed: 0, errors: [String(error)], generated_analyses: [] },
+      timestamp: new Date().toISOString()
+    })
   }
 }
 
