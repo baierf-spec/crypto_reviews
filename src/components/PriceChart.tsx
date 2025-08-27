@@ -3,6 +3,8 @@
 import { useEffect, useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 const Line = dynamic(() => import('react-chartjs-2').then(m => m.Line), { ssr: false })
+const TVChart = dynamic(() => import('./TradingViewChart'), { ssr: false })
+import { getTvBaseSymbol } from '@/lib/tvSymbols'
 import {
   Chart as ChartJS,
   LineElement,
@@ -24,6 +26,7 @@ interface PriceChartProps {
 export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartProps) {
   const [series, setSeries] = useState<number[][] | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [tvBase, setTvBase] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -36,6 +39,15 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
           const data = await hist.json()
           if (!cancelled) setSeries(data.prices || null)
         }
+
+        // Try to compute a TradingView symbol base for supported coins
+        try {
+          const coinRes = await fetch(`/api/coins/${coinId}`).catch(() => null)
+          const coinJson = coinRes && coinRes.ok ? await coinRes.json() : null
+          const symbol = coinJson?.data?.symbol || coinJson?.symbol
+          const mapped = getTvBaseSymbol(coinId, symbol ? String(symbol).toUpperCase() : undefined)
+          if (!cancelled) setTvBase(mapped)
+        } catch (_) {}
       } catch (_) {}
     }
     load()
@@ -65,7 +77,10 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
 
   return (
     <div className={heightClass}>
-      {chartData ? (
+      {/* Prefer TradingView for supported symbols; fallback to internal line chart */}
+      {tvBase ? (
+        <TVChart symbol={`${tvBase}USDT`} />
+      ) : chartData ? (
         <Line
           data={chartData}
           options={{
