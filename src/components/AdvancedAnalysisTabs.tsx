@@ -272,15 +272,20 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Overview</h3>
           <p className="text-gray-300 text-sm">Full AI analysis and key metrics.</p>
-          {analysis && (
+          {currentAnalysis && (
             <div>
               <div className="flex items-center mb-3">
                 <RatingStars rating={overallStars} size="md" />
                 <span className="ml-3 text-gray-400 text-sm">Current Price: <span className="text-white font-semibold">{formatPrice(coin.current_price)}</span></span>
               </div>
               <p className="text-gray-300 text-sm">
-                {(typeof analysis.content === 'string' ? analysis.content.replace(/\s+/g, ' ').slice(0, 280) : 'AI analysis available below.')}
-                {typeof analysis.content === 'string' && analysis.content.length > 280 ? '…' : ''}
+                {(() => {
+                  const c: any = currentAnalysis
+                  const text = typeof c?.content === 'string'
+                    ? c.content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+                    : ''
+                  return text ? `${text.slice(0, 280)}${text.length > 280 ? '…' : ''}` : 'AI analysis available below.'
+                })()}
               </p>
             </div>
           )}
