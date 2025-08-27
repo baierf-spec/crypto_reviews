@@ -20,6 +20,22 @@ function formatMarkdownToHtml(md: string): string {
       .split(/\n\n+/)
       .map(seg => /<h2|<ul|<li|<table|<p|<strong|<em|<a|<img/.test(seg) ? seg : `<p class=\"text-gray-300 mb-2\">${seg.replace(/\n/g, ' ')}</p>`)
       .join('')
+    // Convert markdown tables to styled table
+    html = html.replace(/^\|([^\n]+)\|\n\|[-\s|]+\|\n([\s\S]*?)\n(?=\n|$)/gm, (match, headerRow, bodyRows) => {
+      const headers = headerRow.split('|').map((h: string) => h.trim()).filter(Boolean)
+      const rows = bodyRows.split(/\n/).map((r: string) => r.split('|').map(c => c.trim()).filter(Boolean)).filter(r => r.length)
+      const thead = `<thead><tr>${headers.map(h => `<th class=\"px-3 py-2 text-left text-gray-300\">${h}</th>`).join('')}</tr></thead>`
+      const tbody = `<tbody>${rows.map(cols => `<tr class=\"border-t border-white/10\">${cols.map(c => `<td class=\"px-3 py-2 text-white/90\">${c}</td>`).join('')}</tr>`).join('')}</tbody>`
+      return `<div class=\"overflow-x-auto mb-4\"><table class=\"min-w-full text-sm\">${thead}${tbody}</table></div>`
+    })
+    // Convert price prediction bullet list to table if present
+    html = html.replace(/<ul class=\"list-disc[^>]*\">([\s\S]*?)<\/ul>/g, (m, inner) => {
+      if (!/Bullish:|Neutral:|Bearish:/i.test(inner)) return m
+      const items = Array.from(inner.matchAll(/<li class=\"ml-4\">\s*([^<:]+):\s*([^<]+)<\/li>/g)).map(a => ({ label: a[1], text: a[2] }))
+      if (items.length < 3) return m
+      const rows = items.map(it => `<tr class=\"border-t border-white/10\"><td class=\"px-3 py-2 text-white\"><strong>${it.label}</strong></td><td class=\"px-3 py-2 text-white/90\">${it.text}</td></tr>`).join('')
+      return `<div class=\"overflow-x-auto mb-4\"><table class=\"min-w-full text-sm\"><thead><tr><th class=\"px-3 py-2 text-left\">Scenario</th><th class=\"px-3 py-2 text-left\">Outlook</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    })
     return html
   } catch (_) {
     return md
