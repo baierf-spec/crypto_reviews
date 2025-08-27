@@ -326,6 +326,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
           </div>
           <div className="text-sm text-gray-300">
             <p className="mb-1"><span className="text-white font-semibold">Interpretation:</span> Positive values suggest bullish tone; negative values bearish.</p>
+            <p className="text-xs text-gray-400 mt-1">{(() => { const s=currentAnalysis?.social_sentiment?.overall_score; if(s==null) return 'No social data yet — request a new review to populate this.'; if(s>=30) return 'Overall social tone is moderately bullish; news flow supports near-term strength.'; if(s<=-30) return 'Overall social tone is moderately bearish; consider downside risk.'; return 'Social tone is mixed/neutral; no strong skew at the moment.' })()}</p>
           </div>
           <p className="text-xs text-gray-500">Sentiment is aggregated for illustration only.</p>
         </div>
@@ -358,6 +359,7 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
             </div>
           </div>
           <p className="text-xs text-gray-500">Forecasts are scenario-based and not guarantees. Not financial advice.</p>
+          <div className="text-xs text-gray-400 mt-1">{(() => { const p:any=currentAnalysis?.price_prediction; if(!p) return 'No prediction yet — request a new review to generate scenarios.'; const dir=p.short_term?.pct>=0?'upside':'downside'; return `Near term bias: ${dir}. Short-term target ${formatPrice(p.short_term?.target)}; medium-term ${formatPrice(p.medium_term?.target)}; long-term ${formatPrice(p.long_term?.target)}.`; })()}</div>
         </div>
       )}
     </div>
