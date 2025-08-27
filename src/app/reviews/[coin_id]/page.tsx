@@ -32,10 +32,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
 
     return {
-      title: `${coin.name} AI Analysis`,
+      title: `${coin.name} AI Analysis & Review | Price Prediction`,
       description: `Concise AI analysis, price, sentiment, on‑chain, and eco insights for ${coin.name}.`,
       openGraph: {
-        title: `${coin.name} AI Analysis`,
+        title: `${coin.name} AI Analysis & Review | Price Prediction`,
         description: `Concise AI analysis, price, sentiment, on‑chain, and eco insights for ${coin.name}.`,
         images: [coin.image],
       },
@@ -110,6 +110,16 @@ export default async function CoinReviewPage({ params }: PageProps) {
       <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: `${coin.name} AI Analysis & Review | Price Prediction`,
+            about: coin.name,
+            datePublished: analysis?.date || new Date().toISOString(),
+            author: { '@type': 'Organization', name: 'Crypto AI Insights' },
+            mainEntityOfPage: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.crypto-ai-insights.com'}/${coin.id}/price-prediction/`,
+            image: coin.image,
+          }) }} />
           <div className="rounded-lg p-6 bg-gradient-to-r from-crypto-secondary/60 to-crypto-secondary/30 border border-white/5 shadow-lg mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">

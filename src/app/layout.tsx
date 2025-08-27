@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
+import Script from 'next/script'
 import Footer from '@/components/Footer'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -71,6 +72,16 @@ export default function RootLayout({
         <meta name="google-site-verification" content="dOu1X4i_JOc_6f69gPDVuQWG5qBEJKufkQIAyNL_qQE" />
       </head>
       <body className={inter.className}>
+        {/* Google Analytics */}
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-XWHZWCV38H" />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-XWHZWCV38H');
+          `}
+        </Script>
         <div className="min-h-screen bg-gradient-to-br from-crypto-dark via-crypto-secondary to-crypto-dark">
           <Navbar />
           <main className="flex-1">

@@ -4,6 +4,8 @@ import { buildAnalysisFromCoin } from '@/lib/analysisGenerator'
 function formatMarkdownToHtml(md: string): string {
   try {
     let html = md || ''
+    // Headings -> styled (also handle ###)
+    html = html.replace(/^###\s+(.+)$/gm, '<h3 class="text-xl font-semibold text-teal-300 mb-3">$1</h3>')
     // Headings ## Title -> h2 styled
     html = html.replace(/^##\s+(.+)$/gm, '<h2 class="text-2xl font-bold text-teal-400 mb-4">$1</h2>')
     // Bold *text* (single-line, non-greedy)
@@ -22,6 +24,17 @@ function formatMarkdownToHtml(md: string): string {
       const tbody = `<tbody>${rows.map(cols => `<tr class=\"border-t border-white/10\">${cols.map(c => `<td class=\"px-3 py-2 text-white/90\">${c}</td>`).join('')}</tr>`).join('')}</tbody>`
       return `<div class=\"overflow-x-auto mb-4\"><table class=\"min-w-full text-sm\">${thead}${tbody}</table></div>`
     })
+    // Single-line compact pipe metrics -> 2-col table (Key Metrics fallback)
+    html = html.replace(/^\|\s*([^\n]+?)\s*\|\s*$/gm, (line: string, inside: string) => {
+      const cells = inside.split('|').map((c: string) => c.trim()).filter(Boolean)
+      if (cells.length < 4) return line
+      const rows: string[] = []
+      for (let i = 0; i < cells.length - 1; i += 2) {
+        rows.push(`<tr class=\"border-t border-white/10\"><td class=\"px-3 py-2 text-gray-300\">${cells[i]}</td><td class=\"px-3 py-2 text-white/90\">${cells[i+1]}</td></tr>`)
+      }
+      const thead = `<thead><tr><th class=\"px-3 py-2 text-left text-gray-300\">Metric</th><th class=\"px-3 py-2 text-left text-gray-300\">Value</th></tr></thead>`
+      return `<div class=\"overflow-x-auto mb-4\"><table class=\"min-w-full text-sm\">${thead}<tbody>${rows.join('')}</tbody></table></div>`
+    })
     // Price Prediction Scenarios: bullets to two-column table if detected
     html = html.replace(/<ul class=\"list-disc[^>]*\">([\s\S]*?)<\/ul>/g, (m: string, inner: string) => {
       if (!/Bullish:|Neutral:|Bearish:/i.test(inner)) return m
@@ -33,7 +46,7 @@ function formatMarkdownToHtml(md: string): string {
     // Paragraphs: wrap remaining non-HTML blocks
     html = html
       .split(/\n\n+/)
-      .map(seg => /<h2|<ul|<li|<table|<p|<strong|<em|<a|<img/.test(seg) ? seg : `<p class="text-gray-300 mb-2">${seg.replace(/\n/g, ' ')}</p>`)
+      .map(seg => /<h2|<h3|<ul|<li|<table|<p|<strong|<em|<a|<img/.test(seg) ? seg : `<p class=\"text-gray-300 mb-2\">${seg.replace(/\n/g, ' ')}</p>`)
       .join('')
     return html
   } catch (_) {
