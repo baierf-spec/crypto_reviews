@@ -33,8 +33,9 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
       try {
         const res = await fetch(`/api/coins/${coinId}`)
         if (!res.ok) return
-        const coin = await res.json().catch(() => null)
-        if (coin && coin.symbol) setSymbol(String(coin.symbol).toUpperCase())
+        const payload = await res.json().catch(() => null)
+        const sym = payload?.data?.symbol || payload?.symbol
+        if (sym) setSymbol(String(sym).toUpperCase())
         // We only have /coins for single fetch; use separate endpoint for history
         const hist = await fetch(`/api/coins/${coinId}/history?days=7`).catch(() => null)
         if (hist && hist.ok) {
