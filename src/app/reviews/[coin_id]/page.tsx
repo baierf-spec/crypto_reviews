@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import Image from 'next/image'
-import { useLivePrice } from '@/hooks/useLivePrice'
+import LivePrice from '@/components/LivePrice'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { getCoinData, getTopCoins } from '@/lib/apis'
@@ -91,10 +91,10 @@ export default async function CoinReviewPage({ params }: PageProps) {
     }
     console.log('[reviews/[coin_id]] fetched', {
       coin: {
-        id: coin.id,
-        name: coin.name,
-        symbol: coin.symbol,
-        image: coin.image,
+        id: (coin as any).id,
+        name: (coin as any).name,
+        symbol: (coin as any).symbol,
+        image: (coin as any).image,
       },
       hasAnalysis: !!analysis,
     })
@@ -148,21 +148,7 @@ export default async function CoinReviewPage({ params }: PageProps) {
                 <h1 className="text-2xl font-bold text-white">{coin.name} ({coin.symbol?.toUpperCase?.() || coin.id?.toUpperCase?.()})</h1>
               </div>
               <div className="text-right">
-                {/* Live price (client) with fallback to server value */}
-                {/* eslint-disable-next-line react-hooks/rules-of-hooks */}
-                {(() => {
-                  const live = useLivePrice(coin.symbol?.toUpperCase?.(), price, change24)
-                  const livePrice = live.price ?? price
-                  const livePct = live.pct ?? change24
-                  return (
-                    <div>
-                      <p className="text-xl font-semibold text-white">{formatPrice(livePrice)}</p>
-                      <p className={`${(livePct || 0) >= 0 ? 'text-green-400' : 'text-red-400'} font-semibold`}>
-                        {formatPercentage(livePct || 0)}
-                      </p>
-                    </div>
-                  )
-                })()}
+                <LivePrice symbol={(coin as any).symbol} initialPrice={price} initialPct={change24} />
               </div>
             </div>
           </div>
