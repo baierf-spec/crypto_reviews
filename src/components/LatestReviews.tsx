@@ -14,7 +14,16 @@ export default function LatestReviews() {
     async function fetchLatestReviews() {
       try {
         // Fetch latest analyses from database
-        const analyses = await getLatestAnalyses(6)
+        // Fetch more to allow deduplication by coin
+        const raw = await getLatestAnalyses(30)
+        const analyses: Analysis[] = []
+        const seen = new Set<string>()
+        for (const a of raw) {
+          if (seen.has(a.coin_id)) continue
+          seen.add(a.coin_id)
+          analyses.push(a)
+          if (analyses.length >= 6) break
+        }
         
         if (analyses.length > 0) {
           // Fetch coin data for each analysis

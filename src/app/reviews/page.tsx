@@ -28,7 +28,17 @@ export default async function ReviewsPage() {
 async function ReviewsList() {
   try {
     // Fetch latest analyses from database
-    const analyses = await getLatestAnalyses(20)
+    // Fetch more to allow deduping by coin
+    const analysesRaw = await getLatestAnalyses(80)
+    // Deduplicate by coin_id keeping latest
+    const analyses: Analysis[] = []
+    const seen = new Set<string>()
+    for (const a of analysesRaw) {
+      if (seen.has(a.coin_id)) continue
+      seen.add(a.coin_id)
+      analyses.push(a)
+      if (analyses.length >= 20) break
+    }
     
     if (analyses.length > 0) {
       // Fetch coin data for each analysis

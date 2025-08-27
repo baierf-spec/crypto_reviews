@@ -92,7 +92,8 @@ async function LatestProfessionalReviews() {
   let coins: Coin[] = []
 
   try {
-    analyses = await getLatestAnalyses(10)
+    // Fetch more than needed to allow deduping by coin
+    analyses = await getLatestAnalyses(40)
   } catch (_) {
     analyses = []
   }
@@ -103,10 +104,20 @@ async function LatestProfessionalReviews() {
     coins = []
   }
 
+  // Deduplicate analyses by coin_id (keep latest)
+  const uniqueAnalyses: Analysis[] = []
+  const seenCoins = new Set<string>()
+  for (const a of analyses) {
+    if (seenCoins.has(a.coin_id)) continue
+    seenCoins.add(a.coin_id)
+    uniqueAnalyses.push(a)
+    if (uniqueAnalyses.length >= 10) break
+  }
+
   // If we have analyses, match them with coin market data
   let items: Array<{ coin: Coin; analysis: Analysis | null }> = []
-  if (analyses.length > 0 && coins.length > 0) {
-    items = analyses
+  if (uniqueAnalyses.length > 0 && coins.length > 0) {
+    items = uniqueAnalyses
       .map(a => {
         const coin = coins.find(c => c.id === a.coin_id)
         return coin ? { coin, analysis: a } : null
