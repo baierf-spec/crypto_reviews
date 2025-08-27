@@ -130,8 +130,8 @@ export default function AdvancedAnalysisTabs({ coin, analysis }: AdvancedAnalysi
     datasets: [
       {
         label: 'Sentiment (−100..100)',
-        data: mock.sentiment7d,
-        backgroundColor: mock.sentiment7d.map(v => (v >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)')),
+        data: (Array.isArray(mock.sentiment7d) ? mock.sentiment7d : [0,0,0,0,0,0,0]).map(v => (typeof v === 'number' ? v : 0)),
+        backgroundColor: (Array.isArray(mock.sentiment7d) ? mock.sentiment7d : [0,0,0,0,0,0,0]).map(v => (v >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)')),
       },
     ],
   }), [mock.sentiment7d])

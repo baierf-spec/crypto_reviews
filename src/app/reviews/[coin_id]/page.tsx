@@ -135,7 +135,7 @@ export default async function CoinReviewPage({ params }: PageProps) {
               <AdvancedAnalysisTabs coin={coin} analysis={analysis || null} />
 
               {/* Full Markdown content */}
-              {analysis && (
+              {analysis && typeof analysis.content === 'string' && (
                 <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
                   <h3 className="text-lg font-semibold text-white mb-3">Full Analysis</h3>
                   <AnalysisMarkdown content={analysis.content || 'Analysis content is not available yet.'} />
