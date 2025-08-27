@@ -16,7 +16,7 @@ function formatMarkdownToHtml(md: string): string {
       const lis = items.map(li => li.replace(/^-\s+(.+)/, '<li class="ml-4">$1</li>')).join('')
       return `<ul class="list-disc pl-5 mb-3">${lis}</ul>`
     })
-    // Markdown-style table -> responsive table
+    // Markdown-style table -> responsive table (but we do not allow "Key Metrics" section; it is rendered separately)
     html = html.replace(/^\|([^\n]+)\|\n\|[-\s|]+\|\n([\s\S]*?)\n(?=\n|$)/gm, (match: string, headerRow: string, bodyRows: string) => {
       const headers = headerRow.split('|').map((h: string) => h.trim()).filter(Boolean)
       const rows = bodyRows.split(/\n/).map((r: string) => r.split('|').map((c: string) => c.trim()).filter(Boolean)).filter((r: string[]) => r.length)
@@ -43,6 +43,9 @@ function formatMarkdownToHtml(md: string): string {
       const rows = items.map(it => `<tr class=\"border-t border-white/10\"><td class=\"px-3 py-2 text-white\"><strong>${it.label}</strong></td><td class=\"px-3 py-2 text-white/90\">${it.text}</td></tr>`).join('')
       return `<div class=\"overflow-x-auto mb-4\"><table class=\"min-w-full text-sm\"><thead><tr><th class=\"px-3 py-2 text-left\">Scenario</th><th class=\"px-3 py-2 text-left\">Outlook</th></tr></thead><tbody>${rows}</tbody></table></div>`
     })
+    // Remove any Key Metrics heading block just in case
+    html = html.replace(/<h2[^>]*>\s*Key Metrics\s*<\/h2>[\s\S]*?(?=<h2|$)/i, '')
+
     // Paragraphs: wrap remaining non-HTML blocks
     html = html
       .split(/\n\n+/)

@@ -33,7 +33,13 @@ export default function ClientAnalysis({ coinId }: { coinId: string }) {
     <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg mt-4">
       <div className="mb-2 text-xs text-yellow-400">This is a freshly generated local preview. It will be saved to the server shortly.</div>
       {isHtml ? (
-        <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: (analysis as any).content }} />
+        (() => {
+          const raw = (analysis as any).content as string
+          const cleaned = (() => {
+            try { return raw.replace(/<h2[^>]*>\s*Key Metrics\s*<\/h2>[\s\S]*?(?=<h2|$)/i, '') } catch { return raw }
+          })()
+          return <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: cleaned }} />
+        })()
       ) : (
         <AnalysisMarkdown content={analysis.content} />
       )}
