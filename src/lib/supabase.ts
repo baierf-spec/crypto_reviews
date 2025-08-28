@@ -109,12 +109,20 @@ export async function saveAnalysis(analysis: any) {
           .insert([{ ...rest, date: new Date().toISOString() }])
         if (insErr) throw insErr
       } catch (fallbackErr) {
+        console.error('Fallback save also failed:', fallbackErr)
         throw fallbackErr
       }
     }
+    console.log(`Analysis saved to database for ${(rest as any).coin_name} (${(rest as any).coin_id})`)
     return true
   } catch (error) {
-    console.log('Supabase saveAnalysis failed:', error)
+    console.error('Supabase saveAnalysis failed:', error)
+    console.error('Error details:', {
+      coin_id: analysis?.coin_id,
+      coin_name: analysis?.coin_name,
+      error_message: error instanceof Error ? error.message : 'Unknown error',
+      error_stack: error instanceof Error ? error.stack : undefined
+    })
     return false
   }
 }
