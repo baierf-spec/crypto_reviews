@@ -115,6 +115,8 @@ export async function searchCoins(query: string, limit: number = 100): Promise<C
       price_change_percentage_24h: 0,
       image: c.thumb || c.large || '',
       market_cap_rank: 0,
+      high_24h: 0,
+      low_24h: 0,
     }))
 
     const combined: Coin[] = [...fromTop, ...mappedCg]
