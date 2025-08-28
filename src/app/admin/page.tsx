@@ -179,7 +179,7 @@ export default function AdminPage() {
               <span className={`text-xs px-2 py-1 rounded ${apiReady===null ? 'bg-black/30 text-gray-300' : apiReady ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
                 {apiReady===null ? 'Checking API…' : apiReady ? 'API Ready' : 'API Unavailable'}
               </span>
-              <Zap className="w-8 h-8 text-crypto-accent" />
+            <Zap className="w-8 h-8 text-crypto-accent" />
             </div>
           </div>
 
@@ -399,5 +399,259 @@ export default function AdminPage() {
     </div>
   )
 }
+
+
+
+
+
+                  <span>1000+ unique coin pages indexed by Google</span>
+
+
+                </li>
+
+
+                <li className="flex items-center space-x-2">
+
+
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+
+
+                  <span>Long-tail keywords for each cryptocurrency</span>
+
+
+                </li>
+
+
+                <li className="flex items-center space-x-2">
+
+
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+
+
+                  <span>Fresh, AI-generated content updated regularly</span>
+
+
+                </li>
+
+
+                <li className="flex items-center space-x-2">
+
+
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+
+
+                  <span>Comprehensive analysis pages with high word count</span>
+
+
+                </li>
+
+
+              </ul>
+
+
+            </div>
+
+
+            <div>
+
+
+              <h3 className="text-lg font-semibold text-white mb-3">Content Strategy</h3>
+
+
+              <ul className="space-y-2 text-gray-300">
+
+
+                <li className="flex items-center space-x-2">
+
+
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+
+
+                  <span>Each analysis includes 1000+ words of content</span>
+
+
+                </li>
+
+
+                <li className="flex items-center space-x-2">
+
+
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+
+
+                  <span>Technical analysis, sentiment, and predictions</span>
+
+
+                </li>
+
+
+                <li className="flex items-center space-x-2">
+
+
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+
+
+                  <span>Structured data for better search visibility</span>
+
+
+                </li>
+
+
+                <li className="flex items-center space-x-2">
+
+
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+
+
+                  <span>Internal linking between related coins</span>
+
+
+                </li>
+
+
+              </ul>
+
+
+            </div>
+
+
+          </div>
+
+
+        </div>
+
+
+
+        {/* Monitoring Section */}
+
+
+        <div className="bg-crypto-secondary/50 rounded-lg p-8">
+
+
+          <h2 className="text-2xl font-bold text-white mb-6">System Monitoring</h2>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+
+            <div>
+
+
+              <h3 className="text-lg font-semibold text-white mb-3">Performance Metrics</h3>
+
+
+              <div className="space-y-3">
+
+
+                <div className="flex justify-between items-center">
+
+
+                  <span className="text-gray-300">API Response Time</span>
+
+
+                  <span className="text-white font-semibold">~2.3s</span>
+
+
+                </div>
+
+
+                <div className="flex justify-between items-center">
+
+
+                  <span className="text-gray-300">Success Rate</span>
+
+
+                  <span className="text-green-400 font-semibold">98.5%</span>
+
+
+                </div>
+
+
+                <div className="flex justify-between items-center">
+
+
+                  <span className="text-gray-300">Daily Generations</span>
+
+
+                  <span className="text-white font-semibold">150+</span>
+
+
+                </div>
+
+
+              </div>
+
+
+            </div>
+
+
+            <div>
+
+
+              <h3 className="text-lg font-semibold text-white mb-3">Recent Activity</h3>
+
+
+              <div className="space-y-2 text-sm">
+
+
+                <div className="flex items-center space-x-2">
+
+
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+
+
+                  <span className="text-gray-300">Bitcoin analysis updated 2 hours ago</span>
+
+
+                </div>
+
+
+                <div className="flex items-center space-x-2">
+
+
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+
+
+                  <span className="text-gray-300">Ethereum analysis generated 4 hours ago</span>
+
+
+                </div>
+
+
+                <div className="flex items-center space-x-2">
+
+
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+
+
+                  <span className="text-gray-300">Bulk generation completed 6 hours ago</span>
+
+
+                </div>
+
+
+              </div>
+
+
+            </div>
+
+
+          </div>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  )
+
+
+}
+
 
 
