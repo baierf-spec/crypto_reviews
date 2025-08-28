@@ -48,15 +48,16 @@ export default function TradingViewChart({ coinId, heightClass = 'h-64' }: Tradi
             'header_settings',
             'header_fullscreen_button',
             'header_screenshot',
-            'header_chart_type',
-            'header_indicators',
             'header_undo_redo',
             'header_saveload'
           ],
           enabled_features: [
             'study_templates',
             'side_toolbar_in_fullscreen_mode',
-            'hide_left_toolbar_by_default'
+            'hide_left_toolbar_by_default',
+            'header_chart_type',
+            'header_indicators',
+            'timeframes_toolbar'
           ],
           overrides: {
             'paneProperties.background': '#0f172a',
