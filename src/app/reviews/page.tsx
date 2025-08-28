@@ -75,6 +75,7 @@ async function ReviewsList() {
         .map(analysis => {
           const coin = coins.find(c => c.id === analysis.coin_id)
           console.log(`ReviewsList: Looking for coin ${analysis.coin_id}, found:`, coin ? 'yes' : 'no')
+          console.log(`ReviewsList: Analysis content for ${analysis.coin_id}:`, analysis.content?.substring(0, 100) + '...')
           return coin ? { coin, analysis } : null
         })
         .filter((item): item is { coin: Coin; analysis: Analysis } => item !== null)
@@ -83,7 +84,7 @@ async function ReviewsList() {
       console.log('ReviewsList: Reviews with coins:', reviewsWithCoins.length)
 
       if (reviewsWithCoins.length > 0) {
-      return (
+        return (
           <div className="space-y-6">
             <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
               <p className="text-green-400 text-sm">
@@ -96,16 +97,16 @@ async function ReviewsList() {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {reviewsWithCoins.map(({ coin, analysis }) => (
-            <CoinCard
-              key={coin.id}
-              coin={coin}
-              analysis={analysis}
-            />
-          ))}
+              {reviewsWithCoins.map(({ coin, analysis }) => (
+                <CoinCard
+                  key={coin.id}
+                  coin={coin}
+                  analysis={analysis}
+                />
+              ))}
             </div>
-        </div>
-      )
+          </div>
+        )
       } else {
         console.log('ReviewsList: No reviews with coins found, falling back to top coins')
         throw new Error('No reviews with coins found')
@@ -114,10 +115,10 @@ async function ReviewsList() {
       console.log('ReviewsList: No analyses, trying to fetch top coins...')
       // Fallback: show top coins without analysis
       try {
-      const coins = await getTopCoins(20)
+        const coins = await getTopCoins(20)
         console.log('ReviewsList: Top coins fetched:', coins?.length || 0)
         if (coins && coins.length > 0) {
-      return (
+          return (
             <div className="space-y-6">
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                 <p className="text-blue-400 text-sm">
@@ -125,13 +126,13 @@ async function ReviewsList() {
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {coins.map(coin => (
-            <CoinCard
-              key={coin.id}
-              coin={coin}
-              analysis={undefined}
-            />
-          ))}
+                {coins.map(coin => (
+                  <CoinCard
+                    key={coin.id}
+                    coin={coin}
+                    analysis={undefined}
+                  />
+                ))}
               </div>
             </div>
           )
@@ -206,9 +207,9 @@ async function ReviewsList() {
   } catch (error) {
     console.error('Error fetching reviews:', error)
     try {
-    const coins = await getTopCoins(20)
+      const coins = await getTopCoins(20)
       if (coins && coins.length > 0) {
-    return (
+        return (
           <div className="space-y-6">
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
               <p className="text-blue-400 text-sm">
@@ -216,13 +217,13 @@ async function ReviewsList() {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {coins.map(coin => (
-          <CoinCard
-            key={coin.id}
-            coin={coin}
-            analysis={undefined}
-          />
-        ))}
+              {coins.map(coin => (
+                <CoinCard
+                  key={coin.id}
+                  coin={coin}
+                  analysis={undefined}
+                />
+              ))}
             </div>
           </div>
         )
