@@ -148,7 +148,7 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
                 <h2 className="text-2xl font-bold text-white">AI Analysis</h2>
               </div>
               <div className="flex items-center space-x-2">
-                <RatingStars rating={calculateOverallRating(analysis.ratings)} size="lg" showValue />
+                <RatingStars rating={calculateOverallRating(analysis.ratings)} size="md" showValue />
                 <button
                   className="ml-3 inline-flex items-center text-xs text-gray-300 hover:text-white transition-colors"
                   onClick={() => setShowMetricHelp(v => !v)}
@@ -172,18 +172,18 @@ export default function CoinReviewDetail({ coin, analysis }: CoinReviewDetailPro
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-black/20 rounded-lg p-4 text-center border border-white/5">
                 <p className="text-gray-400 mb-2">Sentiment</p>
-                <RatingStars rating={sentimentStars} size="lg" showValue />
+                <RatingStars rating={sentimentStars} size="md" showValue />
                 <p className={`text-sm mt-1 ${getSentimentColor(analysis.ratings.sentiment)}`}>
                   {analysis.ratings.sentiment >= 4 ? 'Bullish' : analysis.ratings.sentiment >= 2 ? 'Neutral' : 'Bearish'}
                 </p>
               </div>
               <div className="bg-black/20 rounded-lg p-4 text-center border border-white/5">
                 <p className="text-gray-400 mb-2">On-Chain</p>
-                <RatingStars rating={onChainStars} size="lg" showValue />
+                <RatingStars rating={onChainStars} size="md" showValue />
               </div>
               <div className="bg-black/20 rounded-lg p-4 text-center flex flex-col items-center border border-white/5">
                 <p className="text-gray-400 mb-2">Eco</p>
-                <EcoGauge rating={analysis.ratings.eco} size="lg" />
+                <EcoGauge rating={analysis.ratings.eco} size="md" />
               </div>
             </div>
           </div>

@@ -25,10 +25,10 @@ export default function RatingStars({
   showHelpIcon = true
 }: RatingStarsProps) {
   const sizeClasses = {
-    xs: 'w-3 h-3',
-    sm: 'w-4 h-4',
-    md: 'w-5 h-5',
-    lg: 'w-6 h-6'
+    xs: 'w-2 h-2 sm:w-3 sm:h-3',
+    sm: 'w-3 h-3 sm:w-4 sm:h-4',
+    md: 'w-4 h-4 sm:w-5 sm:h-5',
+    lg: 'w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6'
   }
 
   const stars = []
@@ -41,7 +41,7 @@ export default function RatingStars({
       <Star
         key={`full-${i}`}
         className={cn(
-          'fill-yellow-400 text-yellow-400',
+          'fill-yellow-400 text-yellow-400 flex-shrink-0',
           sizeClasses[size]
         )}
       />
@@ -51,7 +51,7 @@ export default function RatingStars({
   // Half star
   if (hasHalfStar) {
     stars.push(
-      <div key="half" className="relative">
+      <div key="half" className="relative flex-shrink-0">
         <Star
           className={cn(
             'text-gray-400',
@@ -76,7 +76,7 @@ export default function RatingStars({
       <Star
         key={`empty-${i}`}
         className={cn(
-          'text-gray-400',
+          'text-gray-400 flex-shrink-0',
           sizeClasses[size]
         )}
       />
@@ -84,17 +84,21 @@ export default function RatingStars({
   }
 
   return (
-    <div className={cn('flex items-center flex-nowrap', compact ? 'space-x-1' : 'space-x-2', className)}>
-      <div className="flex overflow-hidden max-w-full whitespace-nowrap">
+    <div className={cn(
+      'flex items-center flex-nowrap min-w-0', 
+      compact ? 'space-x-0.5 sm:space-x-1' : 'space-x-1 sm:space-x-2', 
+      className
+    )}>
+      <div className="flex overflow-hidden min-w-0 flex-1">
         {stars}
       </div>
       {showValue && (
-        <span className="text-sm text-gray-300 tabular-nums">
+        <span className="text-xs sm:text-sm text-gray-300 tabular-nums flex-shrink-0 ml-1">
           {rating.toFixed(1)}
         </span>
       )}
       {hint && showHelpIcon && (
-        <span title={hint} className="text-gray-400">
+        <span title={hint} className="text-gray-400 flex-shrink-0 ml-1">
           <HelpCircle className={cn(sizeClasses[size])} />
         </span>
       )}
