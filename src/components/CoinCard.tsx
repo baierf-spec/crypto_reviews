@@ -105,7 +105,14 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
             </div>
           </div>
 
-          {/* Removed verbose content snippet for a cleaner, professional card */}
+          {/* Analysis Content - Mobile Friendly */}
+          <div className="text-sm text-gray-300 leading-relaxed">
+            <p className="overflow-hidden">
+              <span className="block sm:inline">
+                {analysis.content}
+              </span>
+            </p>
+          </div>
 
           <Link
             href={`/${coin.id}/price-prediction/`}
