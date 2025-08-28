@@ -86,59 +86,45 @@ async function getTopCoinsFallback(limit: number = 1000): Promise<Coin[]> {
 // Search coins by name or symbol
 export async function searchCoins(query: string, limit: number = 100): Promise<Coin[]> {
   try {
-    const response = await fetchWithTimeout(
-      `${CMC_BASE_URL}/cryptocurrency/map?search=${encodeURIComponent(query)}&limit=${limit}`,
-      {
-        headers: {
-          'X-CMC_PRO_API_KEY': CMC_API_KEY,
-          'Accept': 'application/json',
-        },
-      }
+    // First: fast path from our top coins cache (CoinMarketCap list already fetched elsewhere)
+    const cachedTop = await getTopCoins(1000)
+    const fromTop = cachedTop.filter(coin =>
+      coin.name.toLowerCase().includes(query.toLowerCase()) ||
+      coin.symbol.toLowerCase().includes(query.toLowerCase())
     )
 
-    if (!response.ok) {
-      throw new Error(`CoinMarketCap search API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    
-    // Get detailed data for found coins
-    const coinIds = data.data.map((coin: any) => coin.id).join(',')
-    const detailedResponse = await fetchWithTimeout(
-      `${CMC_BASE_URL}/cryptocurrency/quotes/latest?id=${coinIds}&convert=USD`,
-      {
-        headers: {
-          'X-CMC_PRO_API_KEY': CMC_API_KEY,
-          'Accept': 'application/json',
-        },
-      }
+    // Second: full search against CoinGecko which includes small-cap coins
+    const cgRes = await fetchWithTimeout(
+      `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`,
+      { headers: { 'Accept': 'application/json' } }
     )
-
-    if (!detailedResponse.ok) {
-      throw new Error(`CoinMarketCap quotes API error: ${detailedResponse.status}`)
+    let cgResults: any[] = []
+    if (cgRes.ok) {
+      const cg = await cgRes.json()
+      cgResults = Array.isArray(cg?.coins) ? cg.coins : []
     }
 
-    const detailedData = await detailedResponse.json()
-    
-    return Object.values(detailedData.data).map((coin: any) => ({
-      id: coin.slug,
-      name: coin.name,
-      symbol: coin.symbol,
-      current_price: coin.quote.USD.price,
-      market_cap: coin.quote.USD.market_cap,
-      total_volume: coin.quote.USD.volume_24h,
-      price_change_percentage_24h: coin.quote.USD.percent_change_24h,
-      high_24h: coin.quote.USD.high_24h,
-      low_24h: coin.quote.USD.low_24h,
-      image: `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin.id}.png`,
-      market_cap_rank: coin.cmc_rank,
-      circulating_supply: coin.circulating_supply,
-      total_supply: coin.total_supply,
-      max_supply: coin.max_supply,
+    // Normalize CoinGecko results to our Coin shape where possible
+    const mappedCg: Coin[] = cgResults.slice(0, limit).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      symbol: c.symbol,
+      current_price: 0,
+      market_cap: 0,
+      total_volume: 0,
+      price_change_percentage_24h: 0,
+      image: c.thumb || c.large || '',
+      market_cap_rank: 0,
     }))
+
+    const combined: Coin[] = [...fromTop, ...mappedCg]
+      .filter((v, i, arr) => arr.findIndex(x => x.id === v.id) === i)
+      .slice(0, limit)
+
+    return combined
   } catch (error) {
     console.error('Error searching coins:', error)
-    // Fallback to local search
+    // Fallback to local top list search only
     const allCoins = await getTopCoins(1000)
     return allCoins.filter(coin =>
       coin.name.toLowerCase().includes(query.toLowerCase()) ||
