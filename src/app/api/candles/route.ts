@@ -3,8 +3,6 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 import { findExchangeBaseViaCG } from '@/lib/tvSymbols'
 
-export const dynamic = 'force-dynamic'
-
 type Provider = 'binance' | 'mexc' | 'kucoin'
 
 const PROVIDERS: Provider[] = ['binance', 'kucoin', 'mexc']
