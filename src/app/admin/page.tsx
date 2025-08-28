@@ -18,6 +18,7 @@ import {
 export default function AdminPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generationProgress, setGenerationProgress] = useState<any>(null)
+  const [apiReady, setApiReady] = useState<boolean | null>(null)
   const [stats, setStats] = useState({
     totalAnalyses: 0,
     totalCoins: 0,
@@ -54,6 +55,16 @@ export default function AdminPage() {
       } catch (_) {}
     }
     loadHealth()
+    // Bulk API readiness
+    async function checkBulkReady() {
+      try {
+        const res = await fetch('/api/bulk-generate')
+        setApiReady(res.ok)
+      } catch {
+        setApiReady(false)
+      }
+    }
+    checkBulkReady()
     return () => { isMounted = false }
   }, [])
 
@@ -164,14 +175,19 @@ export default function AdminPage() {
                 Generate analyses for multiple coins to improve SEO and organic traffic
               </p>
             </div>
-            <Zap className="w-8 h-8 text-crypto-accent" />
+            <div className="flex items-center gap-3">
+              <span className={`text-xs px-2 py-1 rounded ${apiReady===null ? 'bg-black/30 text-gray-300' : apiReady ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                {apiReady===null ? 'Checking API…' : apiReady ? 'API Ready' : 'API Unavailable'}
+              </span>
+              <Zap className="w-8 h-8 text-crypto-accent" />
+            </div>
           </div>
 
           {/* Generation Options */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <button
               onClick={() => handleBulkGeneration(100)}
-              disabled={isGenerating}
+              disabled={isGenerating || apiReady===false}
               className="bg-crypto-accent hover:bg-crypto-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
             >
               {isGenerating ? (
@@ -189,7 +205,7 @@ export default function AdminPage() {
 
             <button
               onClick={() => handleBulkGeneration(500)}
-              disabled={isGenerating}
+              disabled={isGenerating || apiReady===false}
               className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
             >
               {isGenerating ? (
@@ -207,7 +223,7 @@ export default function AdminPage() {
 
             <button
               onClick={() => handleBulkGeneration(1000)}
-              disabled={isGenerating}
+              disabled={isGenerating || apiReady===false}
               className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
             >
               {isGenerating ? (
