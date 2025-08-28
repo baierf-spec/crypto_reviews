@@ -383,8 +383,6 @@ export default function AdminPage() {
     </div>
   )
 }
-
-
             <button
 
               onClick={() => handleBulkGeneration(500)}
