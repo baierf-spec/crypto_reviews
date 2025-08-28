@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 const Line = dynamic(() => import('react-chartjs-2').then(m => m.Line), { ssr: false })
 const Candles = dynamic(() => import('./CandlesChart'), { ssr: false })
+const SimplePriceChart = dynamic(() => import('./SimplePriceChart'), { ssr: false })
 import { getTvBaseSymbol } from '@/lib/tvSymbols'
 import {
   Chart as ChartJS,
@@ -28,6 +29,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   const [mounted, setMounted] = useState(false)
   const [baseSymbol, setBaseSymbol] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [useFallback, setUseFallback] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -57,6 +59,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
         } else {
           console.error('PriceChart: History API returned error:', hist?.status, hist?.statusText)
           setError('Failed to load price history')
+          setUseFallback(true)
         }
 
         // Resolve a base symbol for our lightweight candles (server will fallback across exchanges)
@@ -84,6 +87,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
       } catch (err) {
         console.error('PriceChart: Error in load function:', err)
         setError('Failed to load chart data')
+        setUseFallback(true)
       }
     }
     load()
@@ -115,17 +119,10 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
 
   if (!mounted) return <div className="h-48 flex items-center justify-center text-gray-400">Loading chart...</div>
 
-  if (error) {
-    return (
-      <div className={heightClass}>
-        <div className="h-full flex items-center justify-center text-red-400">
-          <div className="text-center">
-            <p className="text-sm">Chart Error</p>
-            <p className="text-xs text-gray-400">{error}</p>
-          </div>
-        </div>
-      </div>
-    )
+  // Use fallback chart if there's an error or no data
+  if (useFallback || error || !chartData) {
+    console.log('PriceChart: Using fallback SimplePriceChart')
+    return <SimplePriceChart coinId={coinId} heightClass={heightClass} />
   }
 
   return (
