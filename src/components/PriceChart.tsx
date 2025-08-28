@@ -30,6 +30,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   const [baseSymbol, setBaseSymbol] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [useFallback, setUseFallback] = useState(false)
+  const [debugInfo, setDebugInfo] = useState<any>({})
 
   useEffect(() => {
     setMounted(true)
@@ -70,7 +71,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
             return null
           })
           
-          const coinJson = coinRes && coinRes.ok ? await coinRes.json() : null
+          const coinJson: any = coinRes && coinRes.ok ? await coinRes.json() : null
           const symbol = coinJson?.data?.symbol || coinJson?.symbol
           console.log('PriceChart: Coin symbol resolved:', symbol)
           
@@ -80,6 +81,15 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
             const finalSymbol = String(mapped || symbol).toUpperCase()
             setBaseSymbol(finalSymbol)
             console.log('PriceChart: Final base symbol set:', finalSymbol)
+            
+            // Store debug info
+            setDebugInfo({
+              coinId,
+              originalSymbol: symbol,
+              mappedSymbol: mapped,
+              finalSymbol,
+              hasImmediateMapping: !!getTvBaseSymbol(coinId)
+            })
           }
         } catch (err) {
           console.error('PriceChart: Error resolving symbol:', err)
@@ -127,6 +137,13 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
 
   return (
     <div className={heightClass}>
+      {/* Debug info for development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="text-xs text-gray-500 mb-2 p-2 bg-gray-800 rounded">
+          Debug: {JSON.stringify(debugInfo)}
+        </div>
+      )}
+      
       {/* Prefer lightweight candles; fallback to internal line chart */}
       {baseSymbol ? (
         <Candles base={baseSymbol} quote="USDT" coinId={coinId} interval="1h" height={300} />
