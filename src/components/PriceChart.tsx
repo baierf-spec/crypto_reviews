@@ -27,7 +27,6 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   const [series, setSeries] = useState<number[][] | null>(null)
   const [mounted, setMounted] = useState(false)
   const [baseSymbol, setBaseSymbol] = useState<string | null>(null)
-  const [coinName, setCoinName] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -52,7 +51,6 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
           // Prefer a mapped base symbol when available for better coverage
           const mapped = getTvBaseSymbol(coinId, symbol ? String(symbol).toUpperCase() : undefined)
           if (!cancelled && (mapped || symbol)) setBaseSymbol(String(mapped || symbol).toUpperCase())
-          if (!cancelled) setCoinName(coinJson?.data?.id || coinId)
         } catch (_) {}
       } catch (_) {}
     }
@@ -85,7 +83,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
     <div className={heightClass}>
       {/* Prefer lightweight candles; fallback to internal line chart */}
       {baseSymbol ? (
-        <Candles base={baseSymbol} quote="USDT" coinId={coinName || undefined} interval="1h" height={300} />
+        <Candles base={baseSymbol} quote="USDT" coinId={coinId} interval="1h" height={300} />
       ) : chartData ? (
         <Line
           data={chartData}
