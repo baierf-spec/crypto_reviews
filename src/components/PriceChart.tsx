@@ -27,41 +27,77 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   const [series, setSeries] = useState<number[][] | null>(null)
   const [mounted, setMounted] = useState(false)
   const [baseSymbol, setBaseSymbol] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
+    console.log('PriceChart: Starting to load chart for coinId:', coinId)
+    
     // Set an immediate best-guess base symbol from our allowlist to avoid flicker
     const immediate = getTvBaseSymbol(coinId)
-    if (immediate) setBaseSymbol(immediate)
+    if (immediate) {
+      setBaseSymbol(immediate)
+      console.log('PriceChart: Immediate base symbol set:', immediate)
+    }
+    
     let cancelled = false
     async function load() {
       try {
         // Load 7-day price history (always available via our API)
-        const hist = await fetch(`/api/coins/${coinId}/history?days=7`).catch(() => null)
+        console.log('PriceChart: Fetching price history from API...')
+        const hist = await fetch(`/api/coins/${coinId}/history?days=7`).catch((err) => {
+          console.error('PriceChart: Failed to fetch history:', err)
+          return null
+        })
+        
         if (hist && hist.ok) {
           const data = await hist.json()
+          console.log('PriceChart: History data received:', data?.prices?.length || 0, 'data points')
           if (!cancelled) setSeries(data.prices || null)
+        } else {
+          console.error('PriceChart: History API returned error:', hist?.status, hist?.statusText)
+          setError('Failed to load price history')
         }
 
         // Resolve a base symbol for our lightweight candles (server will fallback across exchanges)
         try {
-          const coinRes = await fetch(`/api/coins/${coinId}`).catch(() => null)
+          console.log('PriceChart: Fetching coin data for symbol resolution...')
+          const coinRes = await fetch(`/api/coins/${coinId}`).catch((err) => {
+            console.error('PriceChart: Failed to fetch coin data:', err)
+            return null
+          })
+          
           const coinJson = coinRes && coinRes.ok ? await coinRes.json() : null
           const symbol = coinJson?.data?.symbol || coinJson?.symbol
+          console.log('PriceChart: Coin symbol resolved:', symbol)
+          
           // Prefer a mapped base symbol when available for better coverage
           const mapped = getTvBaseSymbol(coinId, symbol ? String(symbol).toUpperCase() : undefined)
-          if (!cancelled && (mapped || symbol)) setBaseSymbol(String(mapped || symbol).toUpperCase())
-        } catch (_) {}
-      } catch (_) {}
+          if (!cancelled && (mapped || symbol)) {
+            const finalSymbol = String(mapped || symbol).toUpperCase()
+            setBaseSymbol(finalSymbol)
+            console.log('PriceChart: Final base symbol set:', finalSymbol)
+          }
+        } catch (err) {
+          console.error('PriceChart: Error resolving symbol:', err)
+        }
+      } catch (err) {
+        console.error('PriceChart: Error in load function:', err)
+        setError('Failed to load chart data')
+      }
     }
     load()
     return () => { cancelled = true }
   }, [coinId])
 
   const chartData = useMemo(() => {
-    if (!series || series.length === 0) return null
+    if (!series || series.length === 0) {
+      console.log('PriceChart: No series data available for chart')
+      return null
+    }
     const labels = series.map(([t]) => new Date(t).toLocaleDateString())
     const data = series.map(([, p]) => p)
+    console.log('PriceChart: Chart data prepared with', data.length, 'points')
     return {
       labels,
       datasets: [
@@ -78,6 +114,19 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   }, [series])
 
   if (!mounted) return <div className="h-48 flex items-center justify-center text-gray-400">Loading chart...</div>
+
+  if (error) {
+    return (
+      <div className={heightClass}>
+        <div className="h-full flex items-center justify-center text-red-400">
+          <div className="text-center">
+            <p className="text-sm">Chart Error</p>
+            <p className="text-xs text-gray-400">{error}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={heightClass}>
@@ -97,7 +146,12 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
           }}
         />
       ) : (
-        <div className="h-full flex items-center justify-center text-gray-400">No price data</div>
+        <div className="h-full flex items-center justify-center text-gray-400">
+          <div className="text-center">
+            <p className="text-sm">No price data available</p>
+            <p className="text-xs text-gray-500">Try refreshing the page</p>
+          </div>
+        </div>
       )}
     </div>
   )
