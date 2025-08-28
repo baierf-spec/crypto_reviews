@@ -10,6 +10,7 @@ interface RatingStarsProps {
   showValue?: boolean
   className?: string
   hint?: string
+  compact?: boolean
 }
 
 export default function RatingStars({
@@ -18,7 +19,8 @@ export default function RatingStars({
   size = 'md',
   showValue = false,
   className,
-  hint
+  hint,
+  compact = false
 }: RatingStarsProps) {
   const sizeClasses = {
     sm: 'w-4 h-4',
@@ -79,8 +81,8 @@ export default function RatingStars({
   }
 
   return (
-    <div className={cn('flex items-center space-x-2', className)}>
-      <div className="flex overflow-hidden max-w-full">
+    <div className={cn('flex items-center', compact ? 'space-x-1' : 'space-x-2', className)}>
+      <div className="flex overflow-hidden max-w-full whitespace-nowrap">
         {stars}
       </div>
       {showValue && (
