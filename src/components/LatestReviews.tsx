@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { getLatestAnalyses } from '@/lib/supabase'
 import { getTopCoins } from '@/lib/apis'
+import { getAllAnalysesFromMemory } from '@/lib/analyses'
 import CoinCard from './CoinCard'
 import { Coin, Analysis } from '@/types'
 
@@ -13,11 +14,23 @@ export default function LatestReviews() {
   useEffect(() => {
     async function fetchLatestReviews() {
       try {
-        // Fetch latest analyses from database
-        // Fetch more to allow deduplication by coin
-        const raw = await getLatestAnalyses(30)
+        console.log('LatestReviews: Fetching latest analyses...')
+        
+        // Fetch latest analyses from database (get more to ensure we have enough)
+        let raw = await getLatestAnalyses(50)
+        console.log('LatestReviews: Raw analyses from DB:', raw?.length || 0)
+        
+        // If no analyses from DB, try memory storage
+        if (!raw || raw.length === 0) {
+          console.log('LatestReviews: No DB analyses, trying memory...')
+          raw = getAllAnalysesFromMemory()
+          console.log('LatestReviews: Memory analyses:', raw?.length || 0)
+        }
+        
         const analyses: Analysis[] = []
         const seen = new Set<string>()
+        
+        // Deduplicate by coin_id and take the latest analysis for each coin
         for (const a of raw) {
           if (seen.has(a.coin_id)) continue
           seen.add(a.coin_id)
@@ -25,13 +38,15 @@ export default function LatestReviews() {
           if (analyses.length >= 6) break
         }
         
+        console.log('LatestReviews: Deduplicated analyses:', analyses.length)
+        
         if (analyses.length > 0) {
           // Fetch coin data for each analysis
-          const coinIds = analyses.map(a => a.coin_id).join(',')
           const coins = await getTopCoins(1000)
+          console.log('LatestReviews: Coins fetched:', coins?.length || 0)
           
           // Match analyses with coin data
-          const reviewsWithCoins = analyses
+          const reviewsWithCoins: Array<{ coin: Coin; analysis?: Analysis }> = analyses
             .map(analysis => {
               const coin = coins.find(c => c.id === analysis.coin_id)
               return coin ? { coin, analysis } : null
@@ -39,8 +54,25 @@ export default function LatestReviews() {
             .filter((item): item is { coin: Coin; analysis: Analysis } => item !== null)
             .slice(0, 6)
 
+          console.log('LatestReviews: Reviews with coins:', reviewsWithCoins.length)
+          
+          // If we have fewer than 6 reviews with analysis, fill with top coins
+          if (reviewsWithCoins.length < 6) {
+            const remainingCount = 6 - reviewsWithCoins.length
+            const usedCoinIds = new Set(reviewsWithCoins.map(r => r.coin.id))
+            
+            const topCoins = coins
+              .filter(coin => !usedCoinIds.has(coin.id))
+              .slice(0, remainingCount)
+              .map(coin => ({ coin, analysis: undefined }))
+            
+            reviewsWithCoins.push(...topCoins)
+            console.log('LatestReviews: Added top coins to fill:', topCoins.length)
+          }
+
           setReviews(reviewsWithCoins)
         } else {
+          console.log('LatestReviews: No analyses found, using top coins')
           // Fallback: show top coins without analysis
           const coins = await getTopCoins(6)
           setReviews(coins.map(coin => ({ coin, analysis: undefined })))
