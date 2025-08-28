@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 const Line = dynamic(() => import('react-chartjs-2').then(m => m.Line), { ssr: false })
-const TVChart = dynamic(() => import('./TradingViewChart'), { ssr: false })
 const Candles = dynamic(() => import('./CandlesChart'), { ssr: false })
 import { getTvBaseSymbol } from '@/lib/tvSymbols'
 import {
@@ -27,12 +26,14 @@ interface PriceChartProps {
 export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartProps) {
   const [series, setSeries] = useState<number[][] | null>(null)
   const [mounted, setMounted] = useState(false)
-  const [tvSymbol, setTvSymbol] = useState<string | null>(null)
   const [baseSymbol, setBaseSymbol] = useState<string | null>(null)
   const [coinName, setCoinName] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
+    // Set an immediate best-guess base symbol from our allowlist to avoid flicker
+    const immediate = getTvBaseSymbol(coinId)
+    if (immediate) setBaseSymbol(immediate)
     let cancelled = false
     async function load() {
       try {
@@ -43,19 +44,11 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
           if (!cancelled) setSeries(data.prices || null)
         }
 
-        // Resolve a TradingView full symbol via server API with multi-exchange fallback
+        // Resolve a base symbol for our lightweight candles (server will fallback across exchanges)
         try {
           const coinRes = await fetch(`/api/coins/${coinId}`).catch(() => null)
           const coinJson = coinRes && coinRes.ok ? await coinRes.json() : null
           const symbol = coinJson?.data?.symbol || coinJson?.symbol
-          const params = new URLSearchParams()
-          params.set('coinId', coinId)
-          if (symbol) params.set('symbol', String(symbol))
-          const tvRes = await fetch(`/api/tv/resolve?${params.toString()}`).catch(() => null)
-          if (tvRes && tvRes.ok) {
-            const tv = await tvRes.json()
-            if (tv?.ok && tv?.symbol && !cancelled) setTvSymbol(tv.symbol)
-          }
           // Prefer a mapped base symbol when available for better coverage
           const mapped = getTvBaseSymbol(coinId, symbol ? String(symbol).toUpperCase() : undefined)
           if (!cancelled && (mapped || symbol)) setBaseSymbol(String(mapped || symbol).toUpperCase())
@@ -90,11 +83,9 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
 
   return (
     <div className={heightClass}>
-      {/* Prefer TradingView for supported symbols; fallback to internal line chart */}
+      {/* Prefer lightweight candles; fallback to internal line chart */}
       {baseSymbol ? (
         <Candles base={baseSymbol} quote="USDT" coinId={coinName || undefined} interval="1h" height={300} />
-      ) : tvSymbol ? (
-        <TVChart symbol={tvSymbol} />
       ) : chartData ? (
         <Line
           data={chartData}
