@@ -50,10 +50,22 @@ export async function getAnalysisByCoinId(coin_id: string) {
 
     if (error) {
       console.error(`Supabase: Database error for ${coin_id}:`, error)
-      throw error
+      // Fallback to memory storage on error
+      const memoryResult = getAnalysisFromMemory(coin_id)
+      console.log(`Supabase: Memory fallback for ${coin_id}:`, memoryResult ? 'found' : 'not found')
+      return memoryResult
     }
     
     console.log(`Supabase: Successfully fetched analysis for ${coin_id}:`, data ? 'found' : 'not found')
+    
+    // If no data found in database, try memory storage
+    if (!data) {
+      console.log(`Supabase: No data in database for ${coin_id}, trying memory...`)
+      const memoryResult = getAnalysisFromMemory(coin_id)
+      console.log(`Supabase: Memory result for ${coin_id}:`, memoryResult ? 'found' : 'not found')
+      return memoryResult
+    }
+    
     return data
   } catch (error) {
     console.error('Supabase getAnalysisByCoinId failed:', error)
