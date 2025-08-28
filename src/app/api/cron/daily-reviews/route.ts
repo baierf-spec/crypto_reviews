@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getTopCoins } from '@/lib/apis'
-import { getCoinQueue, addCoinToQueue, updateCoinAnalysisDate, saveAnalysis } from '@/lib/supabase'
+import { getCoinData } from '@/lib/apis'
+import { getAnalysisByCoinId, saveAnalysis } from '@/lib/supabase'
+import OpenAI from 'openai'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,71 +11,79 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get current coin queue
-    const queue = await getCoinQueue()
-    
-    // Get top coins from CoinGecko
-    const topCoins = await getTopCoins(1000)
-    
-    // Filter coins that haven't been analyzed in the last 90 days
-    const ninetyDaysAgo = new Date()
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-    
-    const availableCoins = topCoins.filter(coin => {
-      const queueItem = queue.find(q => q.coin_id === coin.id)
-      if (!queueItem) return true
-      if (!queueItem.last_analyzed_date) return true
-      return new Date(queueItem.last_analyzed_date) < ninetyDaysAgo
-    })
+    // 1) Fetch full coin list from CoinGecko
+    const listRes = await fetch('https://api.coingecko.com/api/v3/coins/list', { cache: 'no-store' })
+    if (!listRes.ok) return NextResponse.json({ error: 'Failed to fetch coins list' }, { status: 500 })
+    const allCoins: Array<{ id: string; symbol: string; name: string }> = await listRes.json()
 
-    // Select next 10 coins to analyze
-    const coinsToAnalyze = availableCoins.slice(0, 10)
+    // Shuffle for randomness
+    const shuffled = allCoins.sort(() => Math.random() - 0.5)
+
+    // 2) Pick up to 100 coins without existing reviews
+    const selected: string[] = []
+    for (const c of shuffled) {
+      if (selected.length >= 100) break
+      try {
+        const exists = await getAnalysisByCoinId(c.id)
+        if (!exists) selected.push(c.id)
+      } catch (_) {
+        // assume not existing when read fails
+        selected.push(c.id)
+      }
+    }
     
     const results = []
     
-    for (const coin of coinsToAnalyze) {
-      try {
-        // Generate analysis
-        const analysisResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-review`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            coin_id: coin.id,
-            coin_name: coin.name,
-            coin_symbol: coin.symbol,
-            current_price: coin.current_price,
-            market_cap: coin.market_cap,
-            price_change_24h: coin.price_change_percentage_24h,
-          }),
-        })
+    // OpenAI client for short review text
+    const openaiKey = process.env.OPENAI_API_KEY
+    const openai = openaiKey ? new OpenAI({ apiKey: openaiKey }) : null
 
-        if (analysisResponse.ok) {
-          const analysisData = await analysisResponse.json()
-          
-          // Save to database
-          await saveAnalysis(analysisData.data)
-          
-          // Update queue
-          await updateCoinAnalysisDate(coin.id)
-          
-          results.push({
-            coin_id: coin.id,
-            status: 'success',
-            analysis_id: analysisData.data.id
-          })
-        } else {
-          results.push({
-            coin_id: coin.id,
-            status: 'failed',
-            error: 'Analysis generation failed'
-          })
+    for (const coinId of selected) {
+      try {
+        const coin = await getCoinData(coinId)
+        if (!coin) {
+          results.push({ coin_id: coinId, status: 'failed', error: 'coin_not_found' })
+          continue
         }
-      } catch (error) {
-        console.error(`Error processing coin ${coin.id}:`, error)
-        results.push({
+
+        // 3) Short AI-based review
+        let review = `Basic review for ${coin.name} (${coin.symbol}).`
+        if (openai) {
+          try {
+            const prompt = `Write a 4-6 sentence objective crypto review with: name, symbol, short description, market sentiment (bullish/neutral/bearish), and risk level (low/medium/high). Coin: ${coin.name} (${coin.symbol}).`
+            const resp = await openai.chat.completions.create({
+              model: 'gpt-4o-mini',
+              temperature: 0.5,
+              max_tokens: 180,
+              messages: [
+                { role: 'system', content: 'You write concise, neutral crypto reviews.' },
+                { role: 'user', content: prompt },
+              ],
+            })
+            review = resp.choices[0]?.message?.content?.trim() || review
+          } catch (_) {}
+        }
+
+        const analysis = {
+          id: `daily_${Date.now()}_${coin.id}`,
           coin_id: coin.id,
+          coin_name: coin.name,
+          coin_symbol: coin.symbol,
+          content: review,
+          date: new Date().toISOString(),
+          ratings: { sentiment: 0, onChain: 0, eco: 5, overall: 3 },
+          price_prediction: null,
+          on_chain_data: { transactions_24h: 0, whale_activity: 'Low', network_growth: 0 },
+          social_sentiment: { twitter_score: 0, reddit_score: 0, overall_score: 0 },
+        }
+
+        await saveAnalysis(analysis as any)
+
+        results.push({ coin_id: coin.id, status: 'success', analysis_id: analysis.id })
+      } catch (error) {
+        console.error(`Error processing coin ${coinId}:`, error)
+        results.push({
+          coin_id: coinId,
           status: 'failed',
           error: error instanceof Error ? error.message : 'Unknown error'
         })
@@ -83,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Processed ${coinsToAnalyze.length} coins`,
+      message: `Created ${results.filter(r => r.status==='success').length} reviews, skipped ${selected.length - results.filter(r => r.status==='success').length}`,
       results
     })
 
