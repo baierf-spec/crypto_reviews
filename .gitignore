@@ -1,3 +1,35 @@
+# Node/Next.js
+node_modules/
+.next/
+out/
+dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Misc
+coverage/
+.turbo/
+*.tsbuildinfo
+**/.vercel
+**/.netlify
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
