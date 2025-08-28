@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 interface Props {
-  symbol: string // full symbol e.g., BTCUSDT or THETAUSDT
+  symbol: string // Accepts full TV symbol e.g., "BINANCE:BTCUSDT" or just pair like "BTCUSDT"
   height?: number
 }
 
@@ -18,9 +18,10 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
       // @ts-ignore
       if (window.TradingView) {
         // @ts-ignore
+        const fullSymbol = symbol.includes(':') ? symbol : `BINANCE:${symbol.toUpperCase()}`
         new window.TradingView.widget({
           autosize: true,
-          symbol: `BINANCE:${symbol.toUpperCase()}`,
+          symbol: fullSymbol,
           interval: '60',
           timezone: 'Etc/UTC',
           theme: 'dark',
@@ -30,7 +31,7 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
           hide_top_toolbar: false,
           hide_legend: false,
           allow_symbol_change: false,
-          container_id: 'tv_' + symbol,
+          container_id: 'tv_' + fullSymbol.replace(/[^A-Z0-9:]/gi, '_'),
         })
       }
     }
@@ -42,5 +43,5 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
     }
   }, [symbol])
 
-  return <div id={'tv_' + symbol} ref={container} style={{ height }} />
+  return <div id={'tv_' + (symbol.includes(':') ? symbol : `BINANCE:${symbol}`).replace(/[^A-Z0-9:]/gi, '_')} ref={container} style={{ height }} />
 }

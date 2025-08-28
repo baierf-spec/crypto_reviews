@@ -26,7 +26,7 @@ interface PriceChartProps {
 export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartProps) {
   const [series, setSeries] = useState<number[][] | null>(null)
   const [mounted, setMounted] = useState(false)
-  const [tvBase, setTvBase] = useState<string | null>(null)
+  const [tvSymbol, setTvSymbol] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -40,13 +40,19 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
           if (!cancelled) setSeries(data.prices || null)
         }
 
-        // Try to compute a TradingView symbol base for supported coins
+        // Resolve a TradingView full symbol via server API with multi-exchange fallback
         try {
           const coinRes = await fetch(`/api/coins/${coinId}`).catch(() => null)
           const coinJson = coinRes && coinRes.ok ? await coinRes.json() : null
           const symbol = coinJson?.data?.symbol || coinJson?.symbol
-          const mapped = getTvBaseSymbol(coinId, symbol ? String(symbol).toUpperCase() : undefined)
-          if (!cancelled) setTvBase(mapped)
+          const params = new URLSearchParams()
+          params.set('coinId', coinId)
+          if (symbol) params.set('symbol', String(symbol))
+          const tvRes = await fetch(`/api/tv/resolve?${params.toString()}`).catch(() => null)
+          if (tvRes && tvRes.ok) {
+            const tv = await tvRes.json()
+            if (tv?.ok && tv?.symbol && !cancelled) setTvSymbol(tv.symbol)
+          }
         } catch (_) {}
       } catch (_) {}
     }
@@ -78,8 +84,8 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   return (
     <div className={heightClass}>
       {/* Prefer TradingView for supported symbols; fallback to internal line chart */}
-      {tvBase ? (
-        <TVChart symbol={`${tvBase}USDT`} />
+      {tvSymbol ? (
+        <TVChart symbol={tvSymbol} />
       ) : chartData ? (
         <Line
           data={chartData}

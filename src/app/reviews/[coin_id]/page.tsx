@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { getCoinData, getTopCoins } from '@/lib/apis'
 import { getAnalysisByCoinId } from '@/lib/supabase'
+import { generateSeoTitle } from '@/lib/seo'
 import PriceChart from '@/components/PriceChart'
 import RatingStars from '@/components/RatingStars'
 import RequestReviewForm from '@/components/RequestReviewForm'
@@ -31,12 +32,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description: 'The requested cryptocurrency could not be found.',
       }
     }
+    const title = await generateSeoTitle(coin.name, {
+      keywords: ['AI Analysis', 'Review', 'Price Prediction', 'Forecast'],
+    })
 
     return {
-      title: `${coin.name} AI Analysis & Review | Price Prediction`,
+      title,
       description: `Concise AI analysis, price, sentiment, on‑chain, and eco insights for ${coin.name}.`,
       openGraph: {
-        title: `${coin.name} AI Analysis & Review | Price Prediction`,
+        title,
         description: `Concise AI analysis, price, sentiment, on‑chain, and eco insights for ${coin.name}.`,
         images: [coin.image],
       },
