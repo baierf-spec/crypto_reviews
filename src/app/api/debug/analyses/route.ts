@@ -1,27 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getAllAnalysesFromMemory } from '@/lib/analyses'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
+    console.log('Debug API: Testing memory storage analyses...')
+    
     const analyses = getAllAnalysesFromMemory()
+    console.log('Debug API: Memory analyses count:', analyses.length)
+    console.log('Debug API: Memory analyses:', analyses)
     
     return NextResponse.json({
       success: true,
       count: analyses.length,
-      analyses: analyses.map(analysis => ({
-        coin_id: analysis.coin_id,
-        coin_name: analysis.coin_name,
-        coin_symbol: analysis.coin_symbol,
-        date: analysis.date,
-        id: analysis.id
-      }))
+      analyses: analyses,
+      message: `Found ${analyses.length} analyses in memory storage`
     })
-
   } catch (error) {
-    console.error('Error fetching analyses:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch analyses' },
-      { status: 500 }
-    )
+    console.error('Debug API: Error testing memory storage:', error)
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      count: 0,
+      analyses: []
+    }, { status: 500 })
   }
 }

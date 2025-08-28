@@ -43,6 +43,13 @@ async function ReviewsList() {
       console.log('ReviewsList: No analyses from DB, trying memory...')
       analysesRaw = getAllAnalysesFromMemory()
       console.log('ReviewsList: Memory analyses result:', analysesRaw?.length || 0)
+      console.log('ReviewsList: Memory analyses raw:', analysesRaw)
+    }
+
+    // Ensure analysesRaw is an array
+    if (!Array.isArray(analysesRaw)) {
+      console.log('ReviewsList: analysesRaw is not an array, setting to empty array')
+      analysesRaw = []
     }
 
     // Deduplicate by coin_id keeping latest
@@ -55,6 +62,7 @@ async function ReviewsList() {
       if (analyses.length >= 20) break
     }
     console.log('ReviewsList: Deduplicated analyses:', analyses.length)
+    console.log('ReviewsList: Analysis coin IDs:', analyses.map(a => a.coin_id))
     
     if (analyses.length > 0) {
       console.log('ReviewsList: Fetching coin data...')
@@ -66,6 +74,7 @@ async function ReviewsList() {
       const reviewsWithCoins = analyses
         .map(analysis => {
           const coin = coins.find(c => c.id === analysis.coin_id)
+          console.log(`ReviewsList: Looking for coin ${analysis.coin_id}, found:`, coin ? 'yes' : 'no')
           return coin ? { coin, analysis } : null
         })
         .filter((item): item is { coin: Coin; analysis: Analysis } => item !== null)
