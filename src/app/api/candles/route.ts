@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { findExchangeBaseViaCG } from '@/lib/tvSymbols'
 
 export const dynamic = 'force-dynamic'
 
@@ -73,7 +74,16 @@ export async function GET(req: NextRequest) {
     const days = Math.max(1, Math.min(365, Number(searchParams.get('days') || 30)))
     const coinId = searchParams.get('coinId') || ''
     const prefer = (searchParams.get('exchange') || '').toLowerCase() as Provider
-    if (!base) return NextResponse.json({ error: 'Missing base' }, { status: 400 })
+    if (!base && !coinId) return NextResponse.json({ error: 'Missing base or coinId' }, { status: 400 })
+
+    let resolvedBase = base
+    if (!resolvedBase && coinId) {
+      const resolved = await findExchangeBaseViaCG(coinId)
+      if (resolved) {
+        resolvedBase = resolved.base
+        console.log(`Candles resolve via CG tickers: ${resolved.exchange}:${resolved.base}${quote}`)
+      }
+    }
 
     const order = prefer && PROVIDERS.includes(prefer) ? [prefer, ...PROVIDERS.filter(p => p !== prefer)] : PROVIDERS
 
@@ -83,12 +93,13 @@ export async function GET(req: NextRequest) {
 
     for (const p of order) {
       try {
-        const url = providerUrl(p, base, quote, interval, limit)
+        const url = providerUrl(p, resolvedBase || base, quote, interval, limit)
         const res = await fetch(url, { next: { revalidate: 0 } })
         if (!res.ok) continue
         const json = await res.json()
-        const normalized = toCandles(p, json, { base, quote })
+        const normalized = toCandles(p, json, { base: resolvedBase || base, quote })
         if (normalized?.length) {
+          console.log(`Chart source: ${p.toUpperCase()}`)
           return NextResponse.json({ ok: true, provider: p, candles: normalized })
         }
       } catch (_) {}
@@ -108,10 +119,11 @@ export async function GET(req: NextRequest) {
             low: Number(r[3]),
             close: Number(r[4]),
             volume: 0,
-            base,
+            base: resolvedBase || base || 'USD',
             quote: 'USD',
           }))
           if (mapped.length) {
+            console.log('Fallback: CoinGecko OHLC')
             return NextResponse.json({ ok: true, provider: 'coingecko', candles: mapped })
           }
         }
