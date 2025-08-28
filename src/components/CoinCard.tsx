@@ -105,13 +105,7 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
             </div>
           </div>
 
-          {/* Analysis Content - Mobile Friendly */}
-          <div className="bg-crypto-primary/10 rounded-lg p-3 border border-crypto-primary/20">
-            <h5 className="text-xs font-medium text-crypto-accent mb-2">Full Analysis</h5>
-            <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-              {analysis.content}
-            </p>
-          </div>
+          {/* Removed verbose content snippet for a cleaner, professional card */}
 
           <Link
             href={`/${coin.id}/price-prediction/`}
