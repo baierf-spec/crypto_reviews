@@ -1,5 +1,13 @@
 import { useEffect, useRef } from 'react'
 
+declare global {
+  interface Window {
+    TradingView?: {
+      widget: (options: any) => void
+    }
+  }
+}
+
 interface Props {
   symbol: string // Accepts full TV symbol e.g., "BINANCE:BTCUSDT" or just pair like "BTCUSDT"
   height?: number
@@ -15,11 +23,10 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
     script.src = 'https://s3.tradingview.com/tv.js'
     script.async = true
     script.onload = () => {
-      // @ts-ignore
-      if (window.TradingView) {
-        // @ts-ignore
+      const tv = (window as any).TradingView
+      if (tv) {
         const fullSymbol = symbol.includes(':') ? symbol : `BINANCE:${symbol.toUpperCase()}`
-        new window.TradingView.widget({
+        new tv.widget({
           autosize: true,
           symbol: fullSymbol,
           interval: '60',
