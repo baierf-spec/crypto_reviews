@@ -139,73 +139,73 @@ export default function RequestReviewForm({ coin }: RequestReviewFormProps) {
       </div>
 
       {/* Analysis Options */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Fast Generation */}
         <div 
-          className={`border-2 rounded-lg p-6 sm:p-8 cursor-pointer transition-all ${
+          className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
             requestType === 'fast' 
               ? 'border-crypto-accent bg-crypto-accent/10' 
               : 'border-gray-600 hover:border-gray-500'
           }`}
           onClick={() => setRequestType('fast')}
         >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <Zap className="w-7 h-7 text-yellow-400" />
-              <h3 className="text-2xl font-bold text-white">Premium Fast Track</h3>
-            </div>
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
-              <DollarSign className="w-5 h-5 text-green-400" />
-              <span className="text-green-400 font-semibold text-xl">$2.99</span>
+              <Zap className="w-6 h-6 text-yellow-400" />
+              <h3 className="text-xl font-bold text-white">Premium Fast Track</h3>
+            </div>
+            <div className="flex items-center space-x-1">
+              <DollarSign className="w-4 h-4 text-green-400" />
+              <span className="text-green-400 font-semibold">$2.99</span>
             </div>
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Speed Benefits */}
-            <div className="bg-yellow-500/10 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-3">
-                <Zap className="w-5 h-5 text-yellow-400" />
-                <span className="text-white font-semibold text-lg">Lightning Fast</span>
+            <div className="bg-yellow-500/10 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-2">
+                <Zap className="w-4 h-4 text-yellow-400" />
+                <span className="text-white font-semibold">Lightning Fast</span>
               </div>
-              <div className="space-y-3 text-base">
-                <div className="flex items-center space-x-3">
-                  <Clock className="w-4 h-4 text-crypto-accent flex-shrink-0" />
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-3 h-3 text-crypto-accent" />
                   <span className="text-white">5-10 minutes generation</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <TrendingUp className="w-4 h-4 text-crypto-accent flex-shrink-0" />
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-3 h-3 text-crypto-accent" />
                   <span className="text-white">Priority processing</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Star className="w-4 h-4 text-crypto-accent flex-shrink-0" />
+                <div className="flex items-center space-x-2">
+                  <Star className="w-3 h-3 text-crypto-accent" />
                   <span className="text-white">Premium AI model</span>
                 </div>
               </div>
             </div>
 
             {/* Exclusive Benefits */}
-            <div className="bg-crypto-accent/10 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-3">
-                <Gift className="w-5 h-5 text-crypto-accent" />
-                <span className="text-white font-semibold text-lg">Exclusive Perks</span>
+            <div className="bg-crypto-accent/10 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-2">
+                <Gift className="w-4 h-4 text-crypto-accent" />
+                <span className="text-white font-semibold">Exclusive Perks</span>
               </div>
-              <div className="space-y-3 text-base">
-                <div className="flex items-center space-x-3">
-                  <Shield className="w-4 h-4 text-crypto-accent flex-shrink-0" />
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center space-x-2">
+                  <Shield className="w-3 h-3 text-crypto-accent" />
                   <span className="text-white">Guaranteed generation</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-4 h-4 text-crypto-accent flex-shrink-0" />
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-3 h-3 text-crypto-accent" />
                   <span className="text-white">Email notification</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Sparkles className="w-4 h-4 text-crypto-accent flex-shrink-0" />
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="w-3 h-3 text-crypto-accent" />
                   <span className="text-white">Enhanced analysis depth</span>
                 </div>
               </div>
             </div>
 
-            <p className="text-gray-400 text-base leading-relaxed">
+            <p className="text-gray-400 text-sm">
               Perfect for traders who need immediate insights or investors making time-sensitive decisions.
             </p>
           </div>
@@ -213,69 +213,69 @@ export default function RequestReviewForm({ coin }: RequestReviewFormProps) {
 
         {/* Queue Option */}
         <div 
-          className={`border-2 rounded-lg p-6 sm:p-8 cursor-pointer transition-all ${
+          className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
             requestType === 'queue' 
               ? 'border-crypto-accent bg-crypto-accent/10' 
               : 'border-gray-600 hover:border-gray-500'
           }`}
           onClick={() => setRequestType('queue')}
         >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <Users className="w-7 h-7 text-blue-400" />
-              <h3 className="text-2xl font-bold text-white">Community Queue</h3>
-            </div>
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
-              <span className="text-green-400 font-semibold text-xl">FREE</span>
+              <Users className="w-6 h-6 text-blue-400" />
+              <h3 className="text-xl font-bold text-white">Community Queue</h3>
+            </div>
+            <div className="flex items-center space-x-1">
+              <span className="text-green-400 font-semibold">FREE</span>
             </div>
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Community Benefits */}
-            <div className="bg-blue-500/10 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-3">
-                <Users className="w-5 h-5 text-blue-400" />
-                <span className="text-white font-semibold text-lg">Community Driven</span>
+            <div className="bg-blue-500/10 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-2">
+                <Users className="w-4 h-4 text-blue-400" />
+                <span className="text-white font-semibold">Community Driven</span>
               </div>
-              <div className="space-y-3 text-base">
-                <div className="flex items-center space-x-3">
-                  <Clock className="w-4 h-4 text-crypto-accent flex-shrink-0" />
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-3 h-3 text-crypto-accent" />
                   <span className="text-white">24-48 hours wait time</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <TrendingUp className="w-4 h-4 text-crypto-accent flex-shrink-0" />
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-3 h-3 text-crypto-accent" />
                   <span className="text-white">Popular requests prioritized</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-4 h-4 text-crypto-accent flex-shrink-0" />
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-3 h-3 text-crypto-accent" />
                   <span className="text-white">Same quality analysis</span>
                 </div>
               </div>
             </div>
 
             {/* Cost Benefits */}
-            <div className="bg-green-500/10 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-3">
-                <DollarSign className="w-5 h-5 text-green-400" />
-                <span className="text-white font-semibold text-lg">Cost Effective</span>
+            <div className="bg-green-500/10 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-2">
+                <DollarSign className="w-4 h-4 text-green-400" />
+                <span className="text-white font-semibold">Cost Effective</span>
               </div>
-              <div className="space-y-3 text-base">
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-3 h-3 text-green-400" />
                   <span className="text-white">Completely free</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-3 h-3 text-green-400" />
                   <span className="text-white">No payment required</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-3 h-3 text-green-400" />
                   <span className="text-white">Access to all analyses</span>
                 </div>
               </div>
             </div>
 
-            <p className="text-gray-400 text-base leading-relaxed">
+            <p className="text-gray-400 text-sm">
               Great for patient investors and those who want to contribute to the community.
             </p>
           </div>
