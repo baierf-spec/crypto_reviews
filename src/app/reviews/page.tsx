@@ -32,13 +32,19 @@ export default async function ReviewsPage() {
 }
 
 async function ReviewsList() {
+  console.log('ReviewsList: Starting to fetch data...')
   try {
     // Fetch latest analyses from database
-    // Fetch more to allow deduping by coin
+    console.log('ReviewsList: Fetching analyses from database...')
     let analysesRaw = await getLatestAnalyses(80)
+    console.log('ReviewsList: Database analyses result:', analysesRaw?.length || 0)
+
     if (!analysesRaw || analysesRaw.length === 0) {
+      console.log('ReviewsList: No analyses from DB, trying memory...')
       analysesRaw = getAllAnalysesFromMemory()
+      console.log('ReviewsList: Memory analyses result:', analysesRaw?.length || 0)
     }
+
     // Deduplicate by coin_id keeping latest
     const analyses: Analysis[] = []
     const seen = new Set<string>()
@@ -48,10 +54,13 @@ async function ReviewsList() {
       analyses.push(a)
       if (analyses.length >= 20) break
     }
+    console.log('ReviewsList: Deduplicated analyses:', analyses.length)
     
     if (analyses.length > 0) {
+      console.log('ReviewsList: Fetching coin data...')
       // Fetch coin data for each analysis
       const coins = await getTopCoins(1000)
+      console.log('ReviewsList: Coins fetched:', coins?.length || 0)
       
       // Match analyses with coin data
       const reviewsWithCoins = analyses
@@ -61,6 +70,13 @@ async function ReviewsList() {
         })
         .filter((item): item is { coin: Coin; analysis: Analysis } => item !== null)
         .slice(0, 20)
+
+      console.log('ReviewsList: Reviews with coins:', reviewsWithCoins.length)
+
+      if (reviewsWithCoins.length === 0) {
+        console.log('ReviewsList: No reviews with coins found, falling back to top coins')
+        throw new Error('No reviews with coins found')
+      }
 
       return (
         <div className="space-y-6">
@@ -81,9 +97,11 @@ async function ReviewsList() {
         </div>
       )
     } else {
+      console.log('ReviewsList: No analyses, trying to fetch top coins...')
       // Fallback: show top coins without analysis
       try {
         const coins = await getTopCoins(20)
+        console.log('ReviewsList: Top coins fetched:', coins?.length || 0)
         if (coins && coins.length > 0) {
           return (
             <div className="space-y-6">
@@ -107,7 +125,8 @@ async function ReviewsList() {
       } catch (fallbackError) {
         console.error('Fallback getTopCoins failed:', fallbackError)
       }
-      
+
+      console.log('ReviewsList: Using mock data fallback...')
       // If getTopCoins also fails, show mock data
       const mockCoins = [
         {
@@ -127,30 +146,30 @@ async function ReviewsList() {
           id: 'ethereum',
           name: 'Ethereum',
           symbol: 'ETH',
-          current_price: 2800,
-          market_cap: 350000000000,
+          current_price: 3200,
+          market_cap: 380000000000,
           total_volume: 15000000000,
           price_change_percentage_24h: 1.8,
           image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
           market_cap_rank: 2,
-          high_24h: 2850,
-          low_24h: 2750,
+          high_24h: 3300,
+          low_24h: 3100,
         },
         {
           id: 'binancecoin',
           name: 'BNB',
           symbol: 'BNB',
           current_price: 320,
-          market_cap: 48000000000,
+          market_cap: 52000000000,
           total_volume: 2000000000,
-          price_change_percentage_24h: -0.5,
+          price_change_percentage_24h: 0.5,
           image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
           market_cap_rank: 3,
           high_24h: 325,
           low_24h: 315,
         }
       ]
-      
+
       return (
         <div className="space-y-6">
           <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
@@ -172,7 +191,6 @@ async function ReviewsList() {
     }
   } catch (error) {
     console.error('Error fetching reviews:', error)
-    // Fallback: show top coins without analysis
     try {
       const coins = await getTopCoins(20)
       if (coins && coins.length > 0) {
@@ -198,8 +216,8 @@ async function ReviewsList() {
     } catch (fallbackError) {
       console.error('Fallback getTopCoins also failed:', fallbackError)
     }
-    
-    // If both analyses and getTopCoins fail, show mock data
+
+    console.log('ReviewsList: Final fallback - showing mock data...')
     const mockCoins = [
       {
         id: 'bitcoin',
@@ -218,30 +236,30 @@ async function ReviewsList() {
         id: 'ethereum',
         name: 'Ethereum',
         symbol: 'ETH',
-        current_price: 2800,
-        market_cap: 350000000000,
+        current_price: 3200,
+        market_cap: 380000000000,
         total_volume: 15000000000,
         price_change_percentage_24h: 1.8,
         image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
         market_cap_rank: 2,
-        high_24h: 2850,
-        low_24h: 2750,
+        high_24h: 3300,
+        low_24h: 3100,
       },
       {
         id: 'binancecoin',
         name: 'BNB',
         symbol: 'BNB',
         current_price: 320,
-        market_cap: 48000000000,
+        market_cap: 52000000000,
         total_volume: 2000000000,
-        price_change_percentage_24h: -0.5,
+        price_change_percentage_24h: 0.5,
         image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
         market_cap_rank: 3,
         high_24h: 325,
         low_24h: 315,
       }
     ]
-    
+
     return (
       <div className="space-y-6">
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
