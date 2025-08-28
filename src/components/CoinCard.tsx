@@ -82,18 +82,25 @@ export default function CoinCard({ coin, analysis }: CoinCardProps) {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium text-gray-300">AI Analysis</h4>
-            <RatingStars rating={calculateOverallRating(analysis.ratings)} size="sm" compact hint="Overall rating blends available signals." />
+            <RatingStars
+              rating={calculateOverallRating(analysis.ratings)}
+              size="sm"
+              compact
+              showHelpIcon={false}
+              className="shrink-0"
+              hint="Overall rating blends available signals."
+            />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 gap-3 text-xs items-start">
+          <div className="grid grid-cols-2 gap-3 text-xs items-start">
             <div className="text-center">
-              <RatingStars rating={sentimentStars} size="sm" compact hint="Sentiment (−100..100) rescaled 0–5 stars. Higher = more bullish." />
+              <RatingStars rating={sentimentStars} size="xs" compact showHelpIcon={false} hint="Sentiment (−100..100) rescaled 0–5 stars. Higher = more bullish." />
               <p className="text-gray-400 mt-1">Sentiment</p>
               <p className={`text-[11px] ${getSentimentColor(analysis.ratings.sentiment)}`}>
                 {analysis.ratings.sentiment >= 4 ? 'Bullish' : analysis.ratings.sentiment >= 2 ? 'Neutral' : 'Bearish'}
               </p>
             </div>
             <div className="text-center">
-              <RatingStars rating={onChainStars} size="sm" compact hint="On‑Chain score (0..100) rescaled 0–5 stars from activity/growth/flows." />
+              <RatingStars rating={onChainStars} size="xs" compact showHelpIcon={false} hint="On‑Chain score (0..100) rescaled 0–5 stars from activity/growth/flows." />
               <p className="text-gray-400 mt-1">On-Chain</p>
             </div>
           </div>

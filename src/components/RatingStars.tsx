@@ -6,11 +6,12 @@ import { cn } from '@/lib/utils'
 interface RatingStarsProps {
   rating: number
   maxRating?: number
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   showValue?: boolean
   className?: string
   hint?: string
   compact?: boolean
+  showHelpIcon?: boolean
 }
 
 export default function RatingStars({
@@ -20,9 +21,11 @@ export default function RatingStars({
   showValue = false,
   className,
   hint,
-  compact = false
+  compact = false,
+  showHelpIcon = true
 }: RatingStarsProps) {
   const sizeClasses = {
+    xs: 'w-3 h-3',
     sm: 'w-4 h-4',
     md: 'w-5 h-5',
     lg: 'w-6 h-6'
@@ -81,7 +84,7 @@ export default function RatingStars({
   }
 
   return (
-    <div className={cn('flex items-center', compact ? 'space-x-1' : 'space-x-2', className)}>
+    <div className={cn('flex items-center flex-nowrap', compact ? 'space-x-1' : 'space-x-2', className)}>
       <div className="flex overflow-hidden max-w-full whitespace-nowrap">
         {stars}
       </div>
@@ -90,7 +93,7 @@ export default function RatingStars({
           {rating.toFixed(1)}
         </span>
       )}
-      {hint && (
+      {hint && showHelpIcon && (
         <span title={hint} className="text-gray-400">
           <HelpCircle className={cn(sizeClasses[size])} />
         </span>
