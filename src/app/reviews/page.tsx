@@ -12,13 +12,13 @@ import { Coin, Analysis } from '@/types'
 
 export default async function ReviewsPage() {
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-4 sm:py-8 px-2 sm:px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Latest Crypto Reviews
           </h1>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto px-2">
             AI-powered analysis of the top cryptocurrencies with sentiment analysis, on-chain data, and eco ratings.
           </p>
         </div>
@@ -32,24 +32,13 @@ export default async function ReviewsPage() {
 }
 
 async function ReviewsList() {
-  console.log('ReviewsList: Starting to fetch data...')
-  
-  // Add immediate debug output
-  console.log('ReviewsList: Component is rendering')
-  
   try {
     // Fetch latest analyses from database
     // Fetch more to allow deduping by coin
-    console.log('ReviewsList: Fetching analyses...')
     let analysesRaw = await getLatestAnalyses(80)
-    console.log('ReviewsList: Analyses raw result:', analysesRaw?.length || 0)
-    
     if (!analysesRaw || analysesRaw.length === 0) {
-      console.log('ReviewsList: No analyses from DB, trying memory...')
       analysesRaw = getAllAnalysesFromMemory()
-      console.log('ReviewsList: Analyses from memory:', analysesRaw?.length || 0)
     }
-    
     // Deduplicate by coin_id keeping latest
     const analyses: Analysis[] = []
     const seen = new Set<string>()
@@ -60,13 +49,9 @@ async function ReviewsList() {
       if (analyses.length >= 20) break
     }
     
-    console.log('ReviewsList: Deduplicated analyses:', analyses.length)
-    
     if (analyses.length > 0) {
       // Fetch coin data for each analysis
-      console.log('ReviewsList: Fetching coin data...')
       const coins = await getTopCoins(1000)
-      console.log('ReviewsList: Coins fetched:', coins?.length || 0)
       
       // Match analyses with coin data
       const reviewsWithCoins = analyses
@@ -77,287 +62,23 @@ async function ReviewsList() {
         .filter((item): item is { coin: Coin; analysis: Analysis } => item !== null)
         .slice(0, 20)
 
-      console.log('ReviewsList: Reviews with coins:', reviewsWithCoins.length)
-      
-      if (reviewsWithCoins.length === 0) {
-        console.log('ReviewsList: No reviews with coins found, falling back to top coins')
-        throw new Error('No reviews with coins found')
-      }
-      
       return (
-        <div className="space-y-6">
-          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-            <p className="text-green-400 text-sm">
-              ✅ Found {reviewsWithCoins.length} reviews with analysis data
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reviewsWithCoins.map(({ coin, analysis }) => (
-              <CoinCard
-                key={coin.id}
-                coin={coin}
-                analysis={analysis}
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {reviewsWithCoins.map(({ coin, analysis }) => (
+            <CoinCard
+              key={coin.id}
+              coin={coin}
+              analysis={analysis}
+            />
+          ))}
         </div>
       )
     } else {
       // Fallback: show top coins without analysis
-      console.log('ReviewsList: No analyses, trying to fetch top coins...')
-      try {
-        const coins = await getTopCoins(20)
-        console.log('ReviewsList: Top coins fetched:', coins?.length || 0)
-        if (coins && coins.length > 0) {
-          return (
-            <div className="space-y-6">
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                <p className="text-blue-400 text-sm">
-                  ℹ️ No analyses available. Showing top {coins.length} cryptocurrencies.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {coins.map(coin => (
-                  <CoinCard
-                    key={coin.id}
-                    coin={coin}
-                    analysis={undefined}
-                  />
-                ))}
-              </div>
-            </div>
-          )
-        }
-      } catch (fallbackError) {
-        console.error('Fallback getTopCoins failed:', fallbackError)
-      }
-      
-      // If getTopCoins also fails, show mock data
-      console.log('ReviewsList: Using mock data fallback...')
-      const mockCoins = [
-        {
-          id: 'bitcoin',
-          name: 'Bitcoin',
-          symbol: 'BTC',
-          current_price: 45000,
-          market_cap: 850000000000,
-          total_volume: 25000000000,
-          price_change_percentage_24h: 2.5,
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png',
-          market_cap_rank: 1,
-          high_24h: 46000,
-          low_24h: 44000,
-        },
-        {
-          id: 'ethereum',
-          name: 'Ethereum',
-          symbol: 'ETH',
-          current_price: 2800,
-          market_cap: 350000000000,
-          total_volume: 15000000000,
-          price_change_percentage_24h: 1.8,
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
-          market_cap_rank: 2,
-          high_24h: 2850,
-          low_24h: 2750,
-        },
-        {
-          id: 'binancecoin',
-          name: 'BNB',
-          symbol: 'BNB',
-          current_price: 320,
-          market_cap: 48000000000,
-          total_volume: 2000000000,
-          price_change_percentage_24h: -0.5,
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
-          market_cap_rank: 3,
-          high_24h: 325,
-          low_24h: 315,
-        },
-        {
-          id: 'solana',
-          name: 'Solana',
-          symbol: 'SOL',
-          current_price: 95,
-          market_cap: 42000000000,
-          total_volume: 3000000000,
-          price_change_percentage_24h: 5.2,
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png',
-          market_cap_rank: 4,
-          high_24h: 98,
-          low_24h: 90,
-        },
-        {
-          id: 'cardano',
-          name: 'Cardano',
-          symbol: 'ADA',
-          current_price: 0.45,
-          market_cap: 16000000000,
-          total_volume: 800000000,
-          price_change_percentage_24h: 1.2,
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/2010.png',
-          market_cap_rank: 5,
-          high_24h: 0.46,
-          low_24h: 0.44,
-        },
-        {
-          id: 'ripple',
-          name: 'XRP',
-          symbol: 'XRP',
-          current_price: 0.52,
-          market_cap: 28000000000,
-          total_volume: 1200000000,
-          price_change_percentage_24h: -1.5,
-          image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/52.png',
-          market_cap_rank: 6,
-          high_24h: 0.53,
-          low_24h: 0.51,
-        }
-      ]
-      
-      return (
-        <div className="space-y-6">
-          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
-            <p className="text-yellow-400 text-sm">
-              ⚠️ No analyses available and API data temporarily unavailable. Showing sample cryptocurrency data.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockCoins.map(coin => (
-              <CoinCard
-                key={coin.id}
-                coin={coin}
-                analysis={undefined}
-              />
-            ))}
-          </div>
-        </div>
-      )
-    }
-  } catch (error) {
-    console.error('Error fetching reviews:', error)
-    // Fallback: show top coins without analysis
-    try {
       const coins = await getTopCoins(20)
-      if (coins && coins.length > 0) {
-        return (
-          <div className="space-y-6">
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-              <p className="text-blue-400 text-sm">
-                ℹ️ API error occurred. Showing top {coins.length} cryptocurrencies.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {coins.map(coin => (
-                <CoinCard
-                  key={coin.id}
-                  coin={coin}
-                  analysis={undefined}
-                />
-              ))}
-            </div>
-          </div>
-        )
-      }
-    } catch (fallbackError) {
-      console.error('Fallback getTopCoins also failed:', fallbackError)
-    }
-    
-    // If both analyses and getTopCoins fail, show mock data
-    console.log('ReviewsList: Final fallback - showing mock data...')
-    const mockCoins = [
-      {
-        id: 'bitcoin',
-        name: 'Bitcoin',
-        symbol: 'BTC',
-        current_price: 45000,
-        market_cap: 850000000000,
-        total_volume: 25000000000,
-        price_change_percentage_24h: 2.5,
-        image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png',
-        market_cap_rank: 1,
-        high_24h: 46000,
-        low_24h: 44000,
-      },
-      {
-        id: 'ethereum',
-        name: 'Ethereum',
-        symbol: 'ETH',
-        current_price: 2800,
-        market_cap: 350000000000,
-        total_volume: 15000000000,
-        price_change_percentage_24h: 1.8,
-        image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
-        market_cap_rank: 2,
-        high_24h: 2850,
-        low_24h: 2750,
-      },
-      {
-        id: 'binancecoin',
-        name: 'BNB',
-        symbol: 'BNB',
-        current_price: 320,
-        market_cap: 48000000000,
-        total_volume: 2000000000,
-        price_change_percentage_24h: -0.5,
-        image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
-        market_cap_rank: 3,
-        high_24h: 325,
-        low_24h: 315,
-      },
-      {
-        id: 'solana',
-        name: 'Solana',
-        symbol: 'SOL',
-        current_price: 95,
-        market_cap: 42000000000,
-        total_volume: 3000000000,
-        price_change_percentage_24h: 5.2,
-        image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png',
-        market_cap_rank: 4,
-        high_24h: 98,
-        low_24h: 90,
-      },
-      {
-        id: 'cardano',
-        name: 'Cardano',
-        symbol: 'ADA',
-        current_price: 0.45,
-        market_cap: 16000000000,
-        total_volume: 800000000,
-        price_change_percentage_24h: 1.2,
-        image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/2010.png',
-        market_cap_rank: 5,
-        high_24h: 0.46,
-        low_24h: 0.44,
-      },
-      {
-        id: 'ripple',
-        name: 'XRP',
-        symbol: 'XRP',
-        current_price: 0.52,
-        market_cap: 28000000000,
-        total_volume: 1200000000,
-        price_change_percentage_24h: -1.5,
-        image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/52.png',
-        market_cap_rank: 6,
-        high_24h: 0.53,
-        low_24h: 0.51,
-      }
-    ]
-    
-    return (
-      <div className="space-y-6">
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-          <p className="text-red-400 text-sm">
-            ❌ All data sources failed. Showing sample cryptocurrency data.
-          </p>
-          <p className="text-red-300 text-xs mt-1">
-            Error: {error instanceof Error ? error.message : 'Unknown error'}
-          </p>
-        </div>
+      return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockCoins.map(coin => (
+          {coins.map(coin => (
             <CoinCard
               key={coin.id}
               coin={coin}
@@ -365,6 +86,21 @@ async function ReviewsList() {
             />
           ))}
         </div>
+      )
+    }
+  } catch (error) {
+    console.error('Error fetching reviews:', error)
+    // Fallback: show top coins without analysis
+    const coins = await getTopCoins(20)
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {coins.map(coin => (
+          <CoinCard
+            key={coin.id}
+            coin={coin}
+            analysis={undefined}
+          />
+        ))}
       </div>
     )
   }
