@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
       processed: 0,
       successful: 0,
       failed: 0,
+      saved_to_db: 0,
       errors: [] as string[],
       generated_analyses: [] as any[]
     }
@@ -57,9 +58,10 @@ export async function POST(request: NextRequest) {
           const formattedContent = formatMarkdownToHtml(analysis.content)
           const formatted = { ...analysis, content: formattedContent, content_format: 'html' as const }
 
-          // Save to database
+          // Save to database and record result
+          let savedOk = false
           try {
-            await saveAnalysis(formatted)
+            savedOk = await saveAnalysis(formatted)
           } catch (supabaseError) {
             console.log(`Supabase save failed for ${coin.name}:`, supabaseError)
           }
@@ -67,7 +69,12 @@ export async function POST(request: NextRequest) {
           // Always save to memory
           saveAnalysisToMemory(formatted as any)
 
-          console.log(`Successfully generated analysis for ${coin.name}`)
+          if (savedOk) {
+            results.saved_to_db++
+          } else {
+            results.errors.push(`${coin.name} (${coin.id}): db_save_failed`)
+          }
+          console.log(`Successfully generated analysis for ${coin.name} ${savedOk ? '(saved to DB)' : '(memory only)'}`)
           return { 
             coin_id: coin.id, 
             coin_name: coin.name,

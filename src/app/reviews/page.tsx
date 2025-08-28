@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Latest Crypto Reviews | AI-Powered Coin Analysis & Ratings',
 }
 import { getLatestAnalyses } from '@/lib/supabase'
+import { getAllAnalysesFromMemory } from '@/lib/analyses'
 import { getTopCoins } from '@/lib/apis'
 import CoinCard from '@/components/CoinCard'
 import { Coin, Analysis } from '@/types'
@@ -34,7 +35,10 @@ async function ReviewsList() {
   try {
     // Fetch latest analyses from database
     // Fetch more to allow deduping by coin
-    const analysesRaw = await getLatestAnalyses(80)
+    let analysesRaw = await getLatestAnalyses(80)
+    if (!analysesRaw || analysesRaw.length === 0) {
+      analysesRaw = getAllAnalysesFromMemory()
+    }
     // Deduplicate by coin_id keeping latest
     const analyses: Analysis[] = []
     const seen = new Set<string>()

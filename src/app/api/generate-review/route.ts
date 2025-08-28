@@ -67,6 +67,7 @@ export function formatMarkdownToHtml(md: string): string {
   }
 }
 import { getCoinData } from '@/lib/apis'
+import { generateSeoTitle } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -99,6 +100,17 @@ export async function POST(request: NextRequest) {
     }
 
     const analysis = await buildAnalysisFromCoin(coin as any)
+    // Generate and persist SEO title if missing
+    try {
+      const hasTitle = Boolean((analysis as any).seo_title)
+      if (!hasTitle) {
+        const title = await generateSeoTitle(coin.name, {
+          keywords: ['AI Analysis', 'Review', 'Price Prediction'],
+          strictAllKeywords: true,
+        })
+        ;(analysis as any).seo_title = title
+      }
+    } catch (_) {}
     const formatted = formatMarkdownToHtml(analysis.content)
 
     return NextResponse.json({

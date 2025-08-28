@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 type Provider = 'binance' | 'mexc' | 'kucoin'
 
-const PROVIDERS: Provider[] = ['mexc', 'binance', 'kucoin']
+const PROVIDERS: Provider[] = ['binance', 'kucoin', 'mexc']
 
 function providerUrl(p: Provider, base: string, quote: string, interval: string, limit = 500) {
   const pair = `${base}${quote}`.toUpperCase()

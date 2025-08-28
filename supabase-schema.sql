@@ -22,6 +22,8 @@ CREATE TABLE analyses (
   price_prediction JSONB,
   on_chain_data JSONB,
   social_sentiment JSONB,
+  seo_title TEXT,
+  content_format TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

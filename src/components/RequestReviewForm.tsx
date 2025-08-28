@@ -97,13 +97,16 @@ export default function RequestReviewForm({ coin }: RequestReviewFormProps) {
         
         {requestType === 'fast' && (
           <div className="mt-6">
-            <Link
-              href={`/reviews/${coin.id}`}
+            <button
+              onClick={() => {
+                // Force a reload to fetch the latest analysis
+                window.location.href = `/reviews/${coin.id}`
+              }}
               className="inline-flex items-center space-x-2 bg-crypto-accent hover:bg-crypto-accent/90 text-white px-6 py-3 rounded-lg transition-colors font-medium"
             >
               <ExternalLink className="w-4 h-4" />
               <span>View Analysis Now</span>
-            </Link>
+            </button>
             <p className="text-xs text-gray-500 mt-2">
               Your analysis should be available immediately
             </p>

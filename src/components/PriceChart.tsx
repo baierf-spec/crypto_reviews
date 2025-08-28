@@ -56,7 +56,9 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
             const tv = await tvRes.json()
             if (tv?.ok && tv?.symbol && !cancelled) setTvSymbol(tv.symbol)
           }
-          if (!cancelled && symbol) setBaseSymbol(String(symbol).toUpperCase())
+          // Prefer a mapped base symbol when available for better coverage
+          const mapped = getTvBaseSymbol(coinId, symbol ? String(symbol).toUpperCase() : undefined)
+          if (!cancelled && (mapped || symbol)) setBaseSymbol(String(mapped || symbol).toUpperCase())
           if (!cancelled) setCoinName(coinJson?.data?.id || coinId)
         } catch (_) {}
       } catch (_) {}

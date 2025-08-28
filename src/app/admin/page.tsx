@@ -24,6 +24,7 @@ export default function AdminPage() {
     lastGenerated: null,
     activeUsers: 0
   })
+  const [health, setHealth] = useState<any>(null)
 
   // Load stats on mount
   useEffect(() => {
@@ -44,6 +45,15 @@ export default function AdminPage() {
       } catch (_) {}
     }
     loadStats()
+    // DB Health
+    async function loadHealth() {
+      try {
+        const res = await fetch('/api/admin/health')
+        const data = await res.json()
+        if (isMounted) setHealth(data)
+      } catch (_) {}
+    }
+    loadHealth()
     return () => { isMounted = false }
   }, [])
 
@@ -239,6 +249,35 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
+          )}
+        </div>
+
+        {/* DB Health Section */}
+        <div className="bg-crypto-secondary/50 rounded-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-white mb-4">Database Health</h2>
+          {health ? (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+              <div className="bg-black/20 rounded-lg p-4">
+                <p className="text-gray-400">Env Vars</p>
+                <p className="text-white">URL: {health.env?.has_url ? 'OK' : 'Missing'}</p>
+                <p className="text-white">Anon: {health.env?.has_anon ? 'OK' : 'Missing'}</p>
+                <p className="text-white">Service: {health.env?.has_service ? 'OK' : 'Missing'}</p>
+              </div>
+              <div className="bg-black/20 rounded-lg p-4">
+                <p className="text-gray-400">Read</p>
+                <p className={`font-semibold ${health.canRead ? 'text-green-400' : 'text-red-400'}`}>{health.canRead ? 'OK' : 'Failed'}</p>
+              </div>
+              <div className="bg-black/20 rounded-lg p-4">
+                <p className="text-gray-400">Write</p>
+                <p className={`font-semibold ${health.canWrite ? 'text-green-400' : 'text-red-400'}`}>{health.canWrite ? 'OK' : 'Failed'}</p>
+              </div>
+              <div className="bg-black/20 rounded-lg p-4">
+                <p className="text-gray-400">Last Test Write</p>
+                <p className="text-white">{health.lastWrite ? new Date(health.lastWrite).toLocaleString() : '—'}</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-400">Checking database health…</p>
           )}
         </div>
 

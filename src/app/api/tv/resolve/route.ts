@@ -27,6 +27,7 @@ async function searchTradingView(text: string, exchange?: string): Promise<TvSea
   const url = new URL('https://symbol-search.tradingview.com/symbol_search/')
   url.searchParams.set('text', text)
   url.searchParams.set('type', 'crypto')
+  url.searchParams.set('lang', 'en')
   if (exchange) url.searchParams.set('exchange', exchange)
   const res = await fetch(url.toString(), { cache: 'no-store' })
   if (!res.ok) return []

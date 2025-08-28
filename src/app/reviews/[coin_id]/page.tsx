@@ -32,8 +32,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description: 'The requested cryptocurrency could not be found.',
       }
     }
-    const title = await generateSeoTitle(coin.name, {
-      keywords: ['AI Analysis', 'Review', 'Price Prediction', 'Forecast'],
+    // Prefer stored title if available
+    let storedTitle: string | null = null
+    try {
+      const existing = await getAnalysisByCoinId(params.coin_id)
+      storedTitle = (existing as any)?.seo_title || null
+    } catch {}
+    const title = storedTitle || await generateSeoTitle(coin.name, {
+      keywords: ['AI Analysis', 'Review', 'Price Prediction'],
+      strictAllKeywords: true,
     })
 
     return {
@@ -88,6 +95,12 @@ export default async function CoinReviewPage({ params }: PageProps) {
     } catch (e) {
       console.error('[reviews/[coin_id]] getAnalysisByCoinId failed', e)
       analysis = null
+    }
+    if (!analysis) {
+      try {
+        const fromMem = await import('@/lib/analyses').then(m => m.getAnalysisFromMemory(params.coin_id))
+        if (fromMem) analysis = fromMem as any
+      } catch {}
     }
     if (!analysis) {
       // server-side attempt to read client fallback if present via headers cookie (not available). Leave null.
@@ -171,7 +184,7 @@ export default async function CoinReviewPage({ params }: PageProps) {
               </div>
               {/* Price Chart */}
               <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
-                <h3 className="text-lg font-semibold text-white mb-4">7-Day Price</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">30‑Day Price</h3>
                 <Suspense fallback={<div className="h-[300px] flex items-center justify-center text-gray-400">Loading chart...</div>}>
                   <PriceChart coinId={c.id} heightClass="h-[300px]" />
                 </Suspense>
@@ -179,6 +192,16 @@ export default async function CoinReviewPage({ params }: PageProps) {
 
               {/* Advanced tabs section */}
               <AdvancedAnalysisTabs coin={c} analysis={analysis || null} />
+
+              {/* Quick Facts (mobile-first placement) */}
+              <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg md:hidden">
+                <h3 className="text-lg font-semibold text-white mb-3">Quick Facts</h3>
+                <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
+                  <li>Market Cap: <span className="text-white font-medium">{marketCapText}</span></li>
+                  <li>Volume (24h): <span className="text-white font-medium">{volumeText}</span></li>
+                  <li>Circulating Supply: <span className="text-white font-medium">{supplyText}</span></li>
+                </ul>
+              </div>
 
               {/* Full content placed AFTER indicators (below tabs), replaces summary */}
               <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
@@ -202,7 +225,7 @@ export default async function CoinReviewPage({ params }: PageProps) {
             </div>
 
             {/* Sidebar 1/3 */}
-            <aside className="space-y-6">
+            <aside className="space-y-6 hidden md:block">
               <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
                 <h3 className="text-lg font-semibold text-white mb-3">Quick Facts</h3>
                 <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">

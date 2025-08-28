@@ -12,6 +12,7 @@ export async function generateSeoTitle(
     keywords?: string[]
     context?: string
     year?: number
+    strictAllKeywords?: boolean
   }
 ): Promise<string> {
   const year = options?.year ?? new Date().getFullYear()
@@ -27,10 +28,12 @@ export async function generateSeoTitle(
     return `${coinName} ${kw} ${year} — Forecast & Investment Trends`
   }
 
+  const requireAll = options?.strictAllKeywords ? `Include ALL of these phrases exactly once: ${baseKeywords.join(', ')}` : `Include at least ONE of these keyword phrases: ${baseKeywords.join(', ')}`
+
   const prompt = `You are an SEO expert. Create ONE unique HTML <title> (no quotes) for a cryptocurrency review page.
 Requirements:
 - Include the exact coin name: ${coinName}
-- Include at least ONE of these keyword phrases: ${baseKeywords.join(', ')}
+- ${requireAll}
 - Vary synonyms and word order; keep it natural and compelling
 - Add brief context such as ${year}, forecast, investment, or trends
 - Keep under 62 characters when possible, max 70
