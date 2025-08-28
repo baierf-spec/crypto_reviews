@@ -74,77 +74,43 @@ export async function GET(req: NextRequest) {
     const days = Math.max(1, Math.min(365, Number(searchParams.get('days') || 30)))
     const coinId = searchParams.get('coinId') || ''
     const prefer = (searchParams.get('exchange') || '').toLowerCase() as Provider
-    
-    console.log('Candles API: Request params:', { base, quote, interval, days, coinId, prefer })
-    
-    if (!base && !coinId) {
-      console.log('Candles API: Missing base or coinId')
-      return NextResponse.json({ error: 'Missing base or coinId' }, { status: 400 })
-    }
+    if (!base && !coinId) return NextResponse.json({ error: 'Missing base or coinId' }, { status: 400 })
 
     let resolvedBase = base
     if (!resolvedBase && coinId) {
-      console.log('Candles API: Resolving base symbol for coinId:', coinId)
       const resolved = await findExchangeBaseViaCG(coinId)
       if (resolved) {
         resolvedBase = resolved.base
-        console.log(`Candles API: Resolved via CG tickers: ${resolved.exchange}:${resolved.base}${quote}`)
-      } else {
-        console.log('Candles API: Failed to resolve base symbol for coinId:', coinId)
+        console.log(`Candles resolve via CG tickers: ${resolved.exchange}:${resolved.base}${quote}`)
       }
     }
 
     const order = prefer && PROVIDERS.includes(prefer) ? [prefer, ...PROVIDERS.filter(p => p !== prefer)] : PROVIDERS
-    console.log('Candles API: Provider order:', order)
 
     // Compute approximate bar limit by interval and days window
     const barsPerDay = interval === '1h' ? 24 : interval === '4h' ? 6 : interval === '1d' ? 1 : interval === '1w' ? 1/7 : 24
     const limit = Math.max(30, Math.ceil(days * barsPerDay))
-    console.log('Candles API: Calculated limit:', limit, 'bars')
 
     for (const p of order) {
       try {
-        console.log('Candles API: Trying provider:', p)
         const url = providerUrl(p, resolvedBase || base, quote, interval, limit)
-        console.log('Candles API: Provider URL:', url)
-        
         const res = await fetch(url, { next: { revalidate: 0 } })
-        console.log('Candles API: Provider response status:', res.status)
-        
-        if (!res.ok) {
-          console.log('Candles API: Provider failed, trying next...')
-          continue
-        }
-        
+        if (!res.ok) continue
         const json = await res.json()
-        console.log('Candles API: Provider data received, length:', Array.isArray(json) ? json.length : 'not array')
-        
         const normalized = toCandles(p, json, { base: resolvedBase || base, quote })
-        console.log('Candles API: Normalized data length:', normalized?.length || 0)
-        
         if (normalized?.length) {
-          console.log(`Candles API: Success with provider ${p.toUpperCase()}`)
+          console.log(`Chart source: ${p.toUpperCase()}`)
           return NextResponse.json({ ok: true, provider: p, candles: normalized })
         }
-      } catch (err) {
-        console.error('Candles API: Provider error:', p, err)
-      }
+      } catch (_) {}
     }
-    
     // CoinGecko OHLC fallback (30 days, USD)
     if (coinId) {
-      console.log('Candles API: Trying CoinGecko fallback for coinId:', coinId)
       try {
         const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=usd&days=${days}`
-        console.log('Candles API: CoinGecko URL:', url)
-        
         const res = await fetch(url, { next: { revalidate: 0 } })
-        console.log('Candles API: CoinGecko response status:', res.status)
-        
         if (res.ok) {
           const data = await res.json()
-          console.log('Candles API: CoinGecko data received, length:', Array.isArray(data) ? data.length : 'not array')
-          
           // CG format: [timestamp, open, high, low, close]
           const mapped = (Array.isArray(data) ? data : []).map((r: any[]) => ({
             time: Math.floor(Number(r[0]) / 1000),
@@ -156,21 +122,15 @@ export async function GET(req: NextRequest) {
             base: resolvedBase || base || 'USD',
             quote: 'USD',
           }))
-          
           if (mapped.length) {
-            console.log('Candles API: CoinGecko fallback success')
+            console.log('Fallback: CoinGecko OHLC')
             return NextResponse.json({ ok: true, provider: 'coingecko', candles: mapped })
           }
         }
-      } catch (err) {
-        console.error('Candles API: CoinGecko fallback error:', err)
-      }
+      } catch (_) {}
     }
-    
-    console.log('Candles API: All providers failed, returning empty result')
     return NextResponse.json({ ok: false, candles: [] }, { status: 404 })
   } catch (e) {
-    console.error('Candles API: Unexpected error:', e)
     return NextResponse.json({ ok: false, error: 'failed' }, { status: 500 })
   }
 }

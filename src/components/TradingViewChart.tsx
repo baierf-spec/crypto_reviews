@@ -38,9 +38,6 @@ export default function TradingViewChart({ coinId, heightClass = 'h-64' }: Tradi
           save_image: false,
           container_id: containerRef.current.id,
           studies: [
-            'MACD@tv-basicstudies',
-            'RSI@tv-basicstudies',
-            'BB@tv-basicstudies',
             'Volume@tv-basicstudies'
           ],
           disabled_features: [
