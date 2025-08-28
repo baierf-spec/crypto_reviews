@@ -34,6 +34,9 @@ export default async function ReviewsPage() {
 async function ReviewsList() {
   console.log('ReviewsList: Starting to fetch data...')
   
+  // Add immediate debug output
+  console.log('ReviewsList: Component is rendering')
+  
   try {
     // Fetch latest analyses from database
     // Fetch more to allow deduping by coin
@@ -75,15 +78,28 @@ async function ReviewsList() {
         .slice(0, 20)
 
       console.log('ReviewsList: Reviews with coins:', reviewsWithCoins.length)
+      
+      if (reviewsWithCoins.length === 0) {
+        console.log('ReviewsList: No reviews with coins found, falling back to top coins')
+        throw new Error('No reviews with coins found')
+      }
+      
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reviewsWithCoins.map(({ coin, analysis }) => (
-            <CoinCard
-              key={coin.id}
-              coin={coin}
-              analysis={analysis}
-            />
-          ))}
+        <div className="space-y-6">
+          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+            <p className="text-green-400 text-sm">
+              ✅ Found {reviewsWithCoins.length} reviews with analysis data
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {reviewsWithCoins.map(({ coin, analysis }) => (
+              <CoinCard
+                key={coin.id}
+                coin={coin}
+                analysis={analysis}
+              />
+            ))}
+          </div>
         </div>
       )
     } else {
@@ -94,14 +110,21 @@ async function ReviewsList() {
         console.log('ReviewsList: Top coins fetched:', coins?.length || 0)
         if (coins && coins.length > 0) {
           return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {coins.map(coin => (
-                <CoinCard
-                  key={coin.id}
-                  coin={coin}
-                  analysis={undefined}
-                />
-              ))}
+            <div className="space-y-6">
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                <p className="text-blue-400 text-sm">
+                  ℹ️ No analyses available. Showing top {coins.length} cryptocurrencies.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {coins.map(coin => (
+                  <CoinCard
+                    key={coin.id}
+                    coin={coin}
+                    analysis={undefined}
+                  />
+                ))}
+              </div>
             </div>
           )
         }
@@ -218,14 +241,21 @@ async function ReviewsList() {
       const coins = await getTopCoins(20)
       if (coins && coins.length > 0) {
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {coins.map(coin => (
-              <CoinCard
-                key={coin.id}
-                coin={coin}
-                analysis={undefined}
-              />
-            ))}
+          <div className="space-y-6">
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+              <p className="text-blue-400 text-sm">
+                ℹ️ API error occurred. Showing top {coins.length} cryptocurrencies.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {coins.map(coin => (
+                <CoinCard
+                  key={coin.id}
+                  coin={coin}
+                  analysis={undefined}
+                />
+              ))}
+            </div>
           </div>
         )
       }
@@ -318,9 +348,12 @@ async function ReviewsList() {
     
     return (
       <div className="space-y-6">
-        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
-          <p className="text-yellow-400 text-sm">
-            ⚠️ API data temporarily unavailable. Showing sample cryptocurrency data.
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+          <p className="text-red-400 text-sm">
+            ❌ All data sources failed. Showing sample cryptocurrency data.
+          </p>
+          <p className="text-red-300 text-xs mt-1">
+            Error: {error instanceof Error ? error.message : 'Unknown error'}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
