@@ -17,9 +17,12 @@ export default function SearchPage() {
   useEffect(() => {
     async function fetchCoins() {
       try {
+        console.log('SearchPage: Fetching initial coins...')
         const res = await fetch('/api/coins?limit=2000')
         const json = await res.json()
         const data: Coin[] = json.data || []
+        console.log('SearchPage: Initial coins fetched:', data.length)
+        console.log('SearchPage: Sample coin data:', data[0])
         setCoins(data)
         setFilteredCoins(data.slice(0, 50))
       } catch (error) {
@@ -41,9 +44,12 @@ export default function SearchPage() {
 
       setSearching(true)
       try {
+        console.log('SearchPage: Searching for:', searchTerm)
         const res = await fetch(`/api/search?q=${encodeURIComponent(searchTerm)}&limit=50`)
         const json = await res.json()
         const results: Coin[] = json.data || []
+        console.log('SearchPage: Search results:', results.length)
+        console.log('SearchPage: Sample search result:', results[0])
         setFilteredCoins(results)
       } catch (error) {
         console.error('Search error:', error)

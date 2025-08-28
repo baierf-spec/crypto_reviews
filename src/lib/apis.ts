@@ -86,12 +86,15 @@ async function getTopCoinsFallback(limit: number = 1000): Promise<Coin[]> {
 // Search coins by name or symbol
 export async function searchCoins(query: string, limit: number = 100): Promise<Coin[]> {
   try {
+    console.log(`Searching for: "${query}"`)
+    
     // First: fast path from our top coins cache (CoinMarketCap list already fetched elsewhere)
     const cachedTop = await getTopCoins(1000)
     const fromTop = cachedTop.filter(coin =>
       coin.name.toLowerCase().includes(query.toLowerCase()) ||
       coin.symbol.toLowerCase().includes(query.toLowerCase())
     )
+    console.log(`Found ${fromTop.length} matches from top coins cache`)
 
     // Second: full search against CoinGecko which includes small-cap coins
     const cgRes = await fetchWithTimeout(
@@ -102,27 +105,50 @@ export async function searchCoins(query: string, limit: number = 100): Promise<C
     if (cgRes.ok) {
       const cg = await cgRes.json()
       cgResults = Array.isArray(cg?.coins) ? cg.coins : []
+      console.log(`Found ${cgResults.length} matches from CoinGecko search`)
     }
 
-    // Normalize CoinGecko results to our Coin shape where possible
-    const mappedCg: Coin[] = cgResults.slice(0, limit).map((c: any) => ({
-      id: c.id,
-      name: c.name,
-      symbol: c.symbol,
-      current_price: 0,
-      market_cap: 0,
-      total_volume: 0,
-      price_change_percentage_24h: 0,
-      image: c.thumb || c.large || '',
-      market_cap_rank: 0,
-      high_24h: 0,
-      low_24h: 0,
-    }))
+    // Get detailed data for CoinGecko results (first 20 to avoid rate limits)
+    const detailedCgResults: Coin[] = []
+    if (cgResults.length > 0) {
+      const idsToFetch = cgResults.slice(0, 20).map((c: any) => c.id).join(',')
+      try {
+        const detailRes = await fetchWithTimeout(
+          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${idsToFetch}&order=market_cap_desc&per_page=20&page=1&sparkline=false&locale=en`,
+          { headers: { 'Accept': 'application/json' } }
+        )
+        
+        if (detailRes.ok) {
+          const detailData = await detailRes.json()
+          console.log(`Fetched detailed data for ${detailData.length} coins`)
+          
+          for (const coin of detailData) {
+            detailedCgResults.push({
+              id: coin.id,
+              name: coin.name,
+              symbol: coin.symbol.toUpperCase(),
+              current_price: coin.current_price || 0,
+              market_cap: coin.market_cap || 0,
+              total_volume: coin.total_volume || 0,
+              price_change_percentage_24h: coin.price_change_percentage_24h || 0,
+              image: coin.image || '',
+              market_cap_rank: coin.market_cap_rank || 0,
+              high_24h: coin.high_24h || 0,
+              low_24h: coin.low_24h || 0,
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching detailed CoinGecko data:', error)
+      }
+    }
 
-    const combined: Coin[] = [...fromTop, ...mappedCg]
+    // Combine results, prioritizing top coins (which have full data)
+    const combined: Coin[] = [...fromTop, ...detailedCgResults]
       .filter((v, i, arr) => arr.findIndex(x => x.id === v.id) === i)
       .slice(0, limit)
 
+    console.log(`Returning ${combined.length} combined search results`)
     return combined
   } catch (error) {
     console.error('Error searching coins:', error)
