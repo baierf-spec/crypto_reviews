@@ -40,6 +40,7 @@ export async function getLatestAnalyses(limit = 10) {
 
 export async function getAnalysisByCoinId(coin_id: string) {
   try {
+    console.log(`Supabase: Attempting to fetch analysis for ${coin_id}`)
     const client = getServerClient()
     const { data, error } = await client
       .from('analyses')
@@ -47,12 +48,24 @@ export async function getAnalysisByCoinId(coin_id: string) {
       .eq('coin_id', coin_id)
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error(`Supabase: Database error for ${coin_id}:`, error)
+      throw error
+    }
+    
+    console.log(`Supabase: Successfully fetched analysis for ${coin_id}:`, data ? 'found' : 'not found')
     return data
   } catch (error) {
-    console.log('Supabase getAnalysisByCoinId failed:', error)
+    console.error('Supabase getAnalysisByCoinId failed:', error)
+    console.error('Error details:', {
+      coin_id,
+      error_message: error instanceof Error ? error.message : 'Unknown error',
+      error_stack: error instanceof Error ? error.stack : undefined
+    })
     // Fallback to memory storage
-    return getAnalysisFromMemory(coin_id)
+    const memoryResult = getAnalysisFromMemory(coin_id)
+    console.log(`Supabase: Memory fallback for ${coin_id}:`, memoryResult ? 'found' : 'not found')
+    return memoryResult
   }
 }
 
@@ -109,20 +122,12 @@ export async function saveAnalysis(analysis: any) {
           .insert([{ ...rest, date: new Date().toISOString() }])
         if (insErr) throw insErr
       } catch (fallbackErr) {
-        console.error('Fallback save also failed:', fallbackErr)
         throw fallbackErr
       }
     }
-    console.log(`Analysis saved to database for ${(rest as any).coin_name} (${(rest as any).coin_id})`)
     return true
   } catch (error) {
-    console.error('Supabase saveAnalysis failed:', error)
-    console.error('Error details:', {
-      coin_id: analysis?.coin_id,
-      coin_name: analysis?.coin_name,
-      error_message: error instanceof Error ? error.message : 'Unknown error',
-      error_stack: error instanceof Error ? error.stack : undefined
-    })
+    console.log('Supabase saveAnalysis failed:', error)
     return false
   }
 }

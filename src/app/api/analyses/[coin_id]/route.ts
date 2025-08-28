@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { getAnalysisByCoinId } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,9 +42,6 @@ export async function POST(req: NextRequest, { params }: { params: { coin_id: st
   }
 }
 
-// removed duplicate import
-import { getAnalysisByCoinId } from '@/lib/supabase'
-
 export async function GET(
   request: NextRequest,
   { params }: { params: { coin_id: string } }
@@ -58,7 +56,11 @@ export async function GET(
       )
     }
 
+    console.log(`API: Fetching analysis for coin_id: ${coin_id}`)
+    
     const analysis = await getAnalysisByCoinId(coin_id)
+    
+    console.log(`API: Analysis result for ${coin_id}:`, analysis ? 'found' : 'not found')
 
     if (!analysis) {
       return NextResponse.json(
@@ -74,6 +76,11 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching analysis:', error)
+    console.error('Error details:', {
+      coin_id: params?.coin_id,
+      error_message: error instanceof Error ? error.message : 'Unknown error',
+      error_stack: error instanceof Error ? error.stack : undefined
+    })
     return NextResponse.json(
       { error: 'Failed to fetch analysis' },
       { status: 500 }
