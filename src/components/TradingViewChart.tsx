@@ -25,14 +25,17 @@ export default function TradingViewChart({ coinId, heightClass = 'h-64' }: Tradi
         new window.TradingView.widget({
           autosize: true,
           symbol: getTradingViewSymbol(coinId),
-          interval: 'D',
+          interval: '1D',
           timezone: 'Etc/UTC',
           theme: 'dark',
           style: '1',
           locale: 'en',
-          toolbar_bg: '#f1f3f6',
+          toolbar_bg: '#0f172a',
           enable_publishing: false,
-          allow_symbol_change: true,
+          allow_symbol_change: false,
+          hide_top_toolbar: false,
+          hide_legend: false,
+          save_image: false,
           container_id: containerRef.current.id,
           studies: [
             'MACD@tv-basicstudies',
@@ -42,18 +45,55 @@ export default function TradingViewChart({ coinId, heightClass = 'h-64' }: Tradi
           ],
           disabled_features: [
             'use_localstorage_for_settings',
-            'volume_force_overlay'
+            'volume_force_overlay',
+            'header_symbol_search',
+            'header_compare',
+            'header_settings',
+            'header_fullscreen_button',
+            'header_screenshot',
+            'header_chart_type',
+            'header_indicators',
+            'header_undo_redo',
+            'header_saveload'
           ],
           enabled_features: [
             'study_templates',
-            'side_toolbar_in_fullscreen_mode'
+            'side_toolbar_in_fullscreen_mode',
+            'hide_left_toolbar_by_default'
           ],
           overrides: {
-            'paneProperties.background': '#1e293b',
-            'paneProperties.vertGridProperties.color': '#334155',
-            'paneProperties.horzGridProperties.color': '#334155',
+            'paneProperties.background': '#0f172a',
+            'paneProperties.vertGridProperties.color': '#1e293b',
+            'paneProperties.horzGridProperties.color': '#1e293b',
+            'paneProperties.crossHairProperties.color': '#3b82f6',
+            'paneProperties.crossHairProperties.style': 1,
+            'paneProperties.crossHairProperties.width': 1,
+            'paneProperties.crossHairProperties.visible': true,
+            'paneProperties.topMargin': 15,
+            'paneProperties.bottomMargin': 15,
+            'paneProperties.leftMargin': 15,
+            'paneProperties.rightMargin': 15,
             'symbolWatermarkProperties.transparency': 90,
-            'scalesProperties.textColor': '#94a3b8'
+            'scalesProperties.textColor': '#94a3b8',
+            'scalesProperties.backgroundColor': '#0f172a',
+            'scalesProperties.borderColor': '#1e293b',
+            'scalesProperties.fontSize': 12,
+            'mainSeriesProperties.candleStyle.upColor': '#10b981',
+            'mainSeriesProperties.candleStyle.downColor': '#ef4444',
+            'mainSeriesProperties.candleStyle.borderUpColor': '#10b981',
+            'mainSeriesProperties.candleStyle.borderDownColor': '#ef4444',
+            'mainSeriesProperties.candleStyle.wickUpColor': '#10b981',
+            'mainSeriesProperties.candleStyle.wickDownColor': '#ef4444',
+            'mainSeriesProperties.candleStyle.drawWick': true,
+            'mainSeriesProperties.candleStyle.drawBorder': true,
+            'mainSeriesProperties.candleStyle.barColorsOnPrevClose': false,
+            'mainSeriesProperties.lineStyle.color': '#3b82f6',
+            'mainSeriesProperties.lineStyle.linewidth': 2,
+            'mainSeriesProperties.lineStyle.priceSource': 'close'
+          },
+          loading_screen: {
+            backgroundColor: '#0f172a',
+            foregroundColor: '#3b82f6'
           }
         })
       }
@@ -69,7 +109,7 @@ export default function TradingViewChart({ coinId, heightClass = 'h-64' }: Tradi
   }, [coinId])
 
   return (
-    <div className={heightClass}>
+    <div className={`${heightClass} bg-slate-900 rounded-lg border border-slate-700 overflow-hidden`}>
       <div 
         ref={containerRef}
         id={`tradingview-${coinId}`}
