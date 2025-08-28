@@ -1,4 +1,9 @@
 import { Brain, Database, TrendingUp, Shield, Zap, BarChart3, Users, Clock, Target, Award } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'About Crypto AI Insights | How Our AI Analyzes Cryptocurrencies',
+}
 
 export default function AboutPage() {
   return (

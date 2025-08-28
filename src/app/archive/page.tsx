@@ -1,4 +1,9 @@
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Crypto Reviews Archive | Historical AI Analyses & Insights',
+}
 import { getLatestAnalyses } from '@/lib/supabase'
 import { getTopCoins } from '@/lib/apis'
 import CoinCard from '@/components/CoinCard'
