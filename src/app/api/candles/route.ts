@@ -70,15 +70,20 @@ export async function GET(req: NextRequest) {
     const base = (searchParams.get('base') || '').toUpperCase()
     const quote = (searchParams.get('quote') || 'USDT').toUpperCase()
     const interval = searchParams.get('interval') || '1h'
+    const days = Math.max(1, Math.min(365, Number(searchParams.get('days') || 30)))
     const coinId = searchParams.get('coinId') || ''
     const prefer = (searchParams.get('exchange') || '').toLowerCase() as Provider
     if (!base) return NextResponse.json({ error: 'Missing base' }, { status: 400 })
 
     const order = prefer && PROVIDERS.includes(prefer) ? [prefer, ...PROVIDERS.filter(p => p !== prefer)] : PROVIDERS
 
+    // Compute approximate bar limit by interval and days window
+    const barsPerDay = interval === '1h' ? 24 : interval === '4h' ? 6 : interval === '1d' ? 1 : interval === '1w' ? 1/7 : 24
+    const limit = Math.max(30, Math.ceil(days * barsPerDay))
+
     for (const p of order) {
       try {
-        const url = providerUrl(p, base, quote, interval)
+        const url = providerUrl(p, base, quote, interval, limit)
         const res = await fetch(url, { next: { revalidate: 0 } })
         if (!res.ok) continue
         const json = await res.json()
@@ -91,7 +96,7 @@ export async function GET(req: NextRequest) {
     // CoinGecko OHLC fallback (30 days, USD)
     if (coinId) {
       try {
-        const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=usd&days=30`
+        const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=usd&days=${days}`
         const res = await fetch(url, { next: { revalidate: 0 } })
         if (res.ok) {
           const data = await res.json()
