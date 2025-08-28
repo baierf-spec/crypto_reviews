@@ -70,6 +70,7 @@ export async function GET(req: NextRequest) {
     const base = (searchParams.get('base') || '').toUpperCase()
     const quote = (searchParams.get('quote') || 'USDT').toUpperCase()
     const interval = searchParams.get('interval') || '1h'
+    const coinId = searchParams.get('coinId') || ''
     const prefer = (searchParams.get('exchange') || '').toLowerCase() as Provider
     if (!base) return NextResponse.json({ error: 'Missing base' }, { status: 400 })
 
@@ -84,6 +85,30 @@ export async function GET(req: NextRequest) {
         const normalized = toCandles(p, json, { base, quote })
         if (normalized?.length) {
           return NextResponse.json({ ok: true, provider: p, candles: normalized })
+        }
+      } catch (_) {}
+    }
+    // CoinGecko OHLC fallback (30 days, USD)
+    if (coinId) {
+      try {
+        const url = `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=usd&days=30`
+        const res = await fetch(url, { next: { revalidate: 0 } })
+        if (res.ok) {
+          const data = await res.json()
+          // CG format: [timestamp, open, high, low, close]
+          const mapped = (Array.isArray(data) ? data : []).map((r: any[]) => ({
+            time: Math.floor(Number(r[0]) / 1000),
+            open: Number(r[1]),
+            high: Number(r[2]),
+            low: Number(r[3]),
+            close: Number(r[4]),
+            volume: 0,
+            base,
+            quote: 'USD',
+          }))
+          if (mapped.length) {
+            return NextResponse.json({ ok: true, provider: 'coingecko', candles: mapped })
+          }
         }
       } catch (_) {}
     }

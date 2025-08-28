@@ -29,6 +29,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   const [mounted, setMounted] = useState(false)
   const [tvSymbol, setTvSymbol] = useState<string | null>(null)
   const [baseSymbol, setBaseSymbol] = useState<string | null>(null)
+  const [coinName, setCoinName] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -56,6 +57,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
             if (tv?.ok && tv?.symbol && !cancelled) setTvSymbol(tv.symbol)
           }
           if (!cancelled && symbol) setBaseSymbol(String(symbol).toUpperCase())
+          if (!cancelled) setCoinName(coinJson?.data?.id || coinId)
         } catch (_) {}
       } catch (_) {}
     }
@@ -88,7 +90,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
     <div className={heightClass}>
       {/* Prefer TradingView for supported symbols; fallback to internal line chart */}
       {baseSymbol ? (
-        <Candles base={baseSymbol} quote="USDT" interval="1h" height={300} />
+        <Candles base={baseSymbol} quote="USDT" coinId={coinName || undefined} interval="1h" height={300} />
       ) : tvSymbol ? (
         <TVChart symbol={tvSymbol} />
       ) : chartData ? (

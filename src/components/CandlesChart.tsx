@@ -6,11 +6,12 @@ import { createChart, UTCTimestamp } from 'lightweight-charts'
 interface Props {
   base: string
   quote?: string
+  coinId?: string
   interval?: '1m' | '5m' | '15m' | '1h' | '4h' | '1d'
   height?: number
 }
 
-export default function CandlesChart({ base, quote = 'USDT', interval = '1h', height = 300 }: Props) {
+export default function CandlesChart({ base, quote = 'USDT', coinId, interval = '1h', height = 300 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function CandlesChart({ base, quote = 'USDT', interval = '1h', he
     async function load() {
       try {
         const params = new URLSearchParams({ base, quote, interval })
+        if (coinId) params.set('coinId', coinId)
         const res = await fetch(`/api/candles?${params.toString()}`)
         const json = await res.json()
         if (!json?.candles || cancelled) return
