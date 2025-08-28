@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 const Line = dynamic(() => import('react-chartjs-2').then(m => m.Line), { ssr: false })
 const TVChart = dynamic(() => import('./TradingViewChart'), { ssr: false })
+const Candles = dynamic(() => import('./CandlesChart'), { ssr: false })
 import { getTvBaseSymbol } from '@/lib/tvSymbols'
 import {
   Chart as ChartJS,
@@ -27,6 +28,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   const [series, setSeries] = useState<number[][] | null>(null)
   const [mounted, setMounted] = useState(false)
   const [tvSymbol, setTvSymbol] = useState<string | null>(null)
+  const [baseSymbol, setBaseSymbol] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -53,6 +55,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
             const tv = await tvRes.json()
             if (tv?.ok && tv?.symbol && !cancelled) setTvSymbol(tv.symbol)
           }
+          if (!cancelled && symbol) setBaseSymbol(String(symbol).toUpperCase())
         } catch (_) {}
       } catch (_) {}
     }
@@ -84,7 +87,9 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   return (
     <div className={heightClass}>
       {/* Prefer TradingView for supported symbols; fallback to internal line chart */}
-      {tvSymbol ? (
+      {baseSymbol ? (
+        <Candles base={baseSymbol} quote="USDT" interval="1h" height={300} />
+      ) : tvSymbol ? (
         <TVChart symbol={tvSymbol} />
       ) : chartData ? (
         <Line

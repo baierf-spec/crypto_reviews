@@ -1,0 +1,96 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
+
+type Provider = 'binance' | 'mexc' | 'kucoin'
+
+const PROVIDERS: Provider[] = ['mexc', 'binance', 'kucoin']
+
+function providerUrl(p: Provider, base: string, quote: string, interval: string, limit = 500) {
+  const pair = `${base}${quote}`.toUpperCase()
+  switch (p) {
+    case 'binance':
+      return `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`
+    case 'mexc':
+      // MEXC uses kline endpoint with ONE_MINUTE, ONE_HOUR, ONE_DAY, etc.
+      const map: Record<string, string> = { '1m': 'Min1', '5m': 'Min5', '15m': 'Min15', '1h': 'Hour1', '4h': 'Hour4', '1d': 'Day1' }
+      const res = map[interval] || 'Hour1'
+      return `https://contract.mexc.com/api/v1/contract/kline/${pair}_SWAP?interval=${res}&limit=${limit}`
+    case 'kucoin':
+      const km: Record<string, string> = { '1m': '1min', '5m': '5min', '15m': '15min', '1h': '1hour', '4h': '4hour', '1d': '1day' }
+      const kint = km[interval] || '1hour'
+      return `https://api.kucoin.com/api/v1/market/candles?type=${kint}&symbol=${base}-${quote}`
+  }
+}
+
+function toCandles(provider: Provider, raw: any[], p: { base: string; quote: string }) {
+  // Normalize to { time, open, high, low, close, volume }
+  if (provider === 'binance') {
+    return raw.map((r: any[]) => ({
+      time: Number(r[0]) / 1000,
+      open: Number(r[1]),
+      high: Number(r[2]),
+      low: Number(r[3]),
+      close: Number(r[4]),
+      volume: Number(r[5]),
+      base: p.base,
+      quote: p.quote,
+    }))
+  }
+  if (provider === 'mexc') {
+    const list = (raw as any)?.data || []
+    return list.map((r: any) => ({
+      time: Number(r.t) / 1000,
+      open: Number(r.o),
+      high: Number(r.h),
+      low: Number(r.l),
+      close: Number(r.c),
+      volume: Number(r.v),
+      base: p.base,
+      quote: p.quote,
+    }))
+  }
+  // kucoin
+  const data = (raw as any)?.data || []
+  return data.map((r: any[]) => ({
+    time: Number(r[0]),
+    open: Number(r[1]),
+    high: Number(r[3]),
+    low: Number(r[4]),
+    close: Number(r[2]),
+    volume: Number(r[5]),
+    base: p.base,
+    quote: p.quote,
+  }))
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const base = (searchParams.get('base') || '').toUpperCase()
+    const quote = (searchParams.get('quote') || 'USDT').toUpperCase()
+    const interval = searchParams.get('interval') || '1h'
+    const prefer = (searchParams.get('exchange') || '').toLowerCase() as Provider
+    if (!base) return NextResponse.json({ error: 'Missing base' }, { status: 400 })
+
+    const order = prefer && PROVIDERS.includes(prefer) ? [prefer, ...PROVIDERS.filter(p => p !== prefer)] : PROVIDERS
+
+    for (const p of order) {
+      try {
+        const url = providerUrl(p, base, quote, interval)
+        const res = await fetch(url, { next: { revalidate: 0 } })
+        if (!res.ok) continue
+        const json = await res.json()
+        const normalized = toCandles(p, json, { base, quote })
+        if (normalized?.length) {
+          return NextResponse.json({ ok: true, provider: p, candles: normalized })
+        }
+      } catch (_) {}
+    }
+    return NextResponse.json({ ok: false, candles: [] }, { status: 404 })
+  } catch (e) {
+    return NextResponse.json({ ok: false, error: 'failed' }, { status: 500 })
+  }
+}
+
+
