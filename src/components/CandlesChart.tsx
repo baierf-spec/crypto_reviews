@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from 'react'
-import { createChart, ISeriesApi, UTCTimestamp } from 'lightweight-charts'
+import { createChart, UTCTimestamp } from 'lightweight-charts'
 
 interface Props {
   base: string
@@ -16,7 +16,7 @@ export default function CandlesChart({ base, quote = 'USDT', interval = '1h', he
   useEffect(() => {
     if (!containerRef.current) return
     const chart = createChart(containerRef.current, {
-      layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#9CA3AF' },
+      layout: { background: { color: 'transparent' }, textColor: '#9CA3AF' },
       grid: { vertLines: { color: 'rgba(255,255,255,0.06)' }, horzLines: { color: 'rgba(255,255,255,0.06)' } },
       crosshair: { mode: 1 },
       rightPriceScale: { borderColor: 'rgba(255,255,255,0.1)' },
