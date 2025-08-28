@@ -43,7 +43,7 @@ const sampleAnalyses: Analysis[] = [
     coin_id: 'bitcoin',
     coin_name: 'Bitcoin',
     coin_symbol: 'BTC',
-    content: 'Bitcoin continues to demonstrate strong fundamentals with increasing institutional adoption. The recent ETF approvals have provided significant market validation, while on-chain metrics show healthy accumulation patterns. Network security remains robust with hash rate at all-time highs. However, environmental concerns persist, though many mining operations are transitioning to renewable energy sources.',
+    content: 'Bitcoin continues to demonstrate strong fundamentals with increasing institutional adoption. The recent ETF approvals have provided significant market validation, while on-chain metrics show healthy accumulation patterns. Network security remains robust with hash rate at all-time highs. However, environmental concerns persist, though many mining operations are transitioning to renewable energy sources. The halving events continue to create supply shocks, while institutional adoption through ETFs has opened new capital flows. Long-term holders are accumulating, and the network effect strengthens with each cycle. Regulatory clarity in major markets provides stability, while technological developments like Lightning Network improve scalability.',
     date: new Date().toISOString(),
     ratings: {
       sentiment: 75,
@@ -74,7 +74,7 @@ const sampleAnalyses: Analysis[] = [
     coin_id: 'ethereum',
     coin_name: 'Ethereum',
     coin_symbol: 'ETH',
-    content: 'Ethereum shows promising developments with the successful transition to Proof of Stake significantly reducing energy consumption. DeFi ecosystem continues to expand with growing TVL and innovative protocols. Layer 2 solutions are gaining traction, improving scalability and reducing gas fees. The upcoming upgrades promise further improvements in performance and user experience.',
+    content: 'Ethereum shows promising developments with the successful transition to Proof of Stake significantly reducing energy consumption. DeFi ecosystem continues to expand with growing TVL and innovative protocols. Layer 2 solutions are gaining traction, improving scalability and reducing gas fees. The upcoming upgrades promise further improvements in performance and user experience. The merge has successfully reduced energy consumption by over 99%, making Ethereum more environmentally sustainable. DeFi protocols continue to innovate with new yield strategies and risk management tools. The ecosystem is becoming more mature with better user experience and developer tools.',
     date: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
     ratings: {
       sentiment: 82,
@@ -105,7 +105,7 @@ const sampleAnalyses: Analysis[] = [
     coin_id: 'solana',
     coin_name: 'Solana',
     coin_symbol: 'SOL',
-    content: 'Solana demonstrates impressive technical performance with high transaction throughput and low fees. The ecosystem is rapidly expanding with numerous DeFi and NFT projects. However, network stability concerns remain, with occasional outages affecting user confidence. The team is actively working on improving reliability while maintaining performance advantages.',
+    content: 'Solana demonstrates impressive technical performance with high transaction throughput and low fees. The ecosystem is rapidly expanding with numerous DeFi and NFT projects. However, network stability concerns remain, with occasional outages affecting user confidence. The team is actively working on improving reliability while maintaining performance advantages. The network has shown remarkable growth in DeFi and NFT adoption, with projects like Serum and Magic Eden gaining significant traction. Technical innovations continue with improvements to the consensus mechanism and network architecture.',
     date: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
     ratings: {
       sentiment: 65,
@@ -136,7 +136,7 @@ const sampleAnalyses: Analysis[] = [
     coin_id: 'cardano',
     coin_name: 'Cardano',
     coin_symbol: 'ADA',
-    content: 'Cardano continues its methodical development approach with peer-reviewed research and academic rigor. The platform emphasizes sustainability and scalability through its Ouroboros consensus mechanism. Recent smart contract capabilities have opened new possibilities for DeFi and NFT development. However, adoption has been slower compared to competitors.',
+    content: 'Cardano continues its methodical development approach with peer-reviewed research and academic rigor. The platform emphasizes sustainability and scalability through its Ouroboros consensus mechanism. Recent smart contract capabilities have opened new possibilities for DeFi and NFT development. However, adoption has been slower compared to competitors. The platform\'s focus on formal verification and academic research provides a strong foundation for long-term development. Recent upgrades have improved smart contract functionality and developer experience.',
     date: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
     ratings: {
       sentiment: 55,
@@ -167,7 +167,7 @@ const sampleAnalyses: Analysis[] = [
     coin_id: 'polkadot',
     coin_name: 'Polkadot',
     coin_symbol: 'DOT',
-    content: 'Polkadot\'s innovative parachain architecture enables true interoperability between different blockchains. The ecosystem is growing with active parachain auctions and development. The platform\'s focus on governance and upgradeability provides long-term sustainability. However, complexity may limit mainstream adoption in the short term.',
+    content: 'Polkadot\'s innovative parachain architecture enables true interoperability between different blockchains. The ecosystem is growing with active parachain auctions and development. The platform\'s focus on governance and upgradeability provides long-term sustainability. However, complexity may limit mainstream adoption in the short term. The network\'s unique approach to blockchain interoperability through parachains and relay chains offers significant advantages for cross-chain communication and data sharing.',
     date: new Date(Date.now() - 345600000).toISOString(), // 4 days ago
     ratings: {
       sentiment: 70,
