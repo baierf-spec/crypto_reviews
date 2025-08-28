@@ -82,29 +82,34 @@ async function ReviewsList() {
 
       console.log('ReviewsList: Reviews with coins:', reviewsWithCoins.length)
 
-      if (reviewsWithCoins.length === 0) {
+      if (reviewsWithCoins.length > 0) {
+        return (
+          <div className="space-y-6">
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+              <p className="text-green-400 text-sm">
+                ✅ Found {reviewsWithCoins.length} reviews with analysis data
+                {reviewsWithCoins.length < analyses.length && (
+                  <span className="text-yellow-400 ml-2">
+                    ({analyses.length - reviewsWithCoins.length} reviews not shown due to missing coin data)
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {reviewsWithCoins.map(({ coin, analysis }) => (
+                <CoinCard
+                  key={coin.id}
+                  coin={coin}
+                  analysis={analysis}
+                />
+              ))}
+            </div>
+          </div>
+        )
+      } else {
         console.log('ReviewsList: No reviews with coins found, falling back to top coins')
         throw new Error('No reviews with coins found')
       }
-
-      return (
-        <div className="space-y-6">
-          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-            <p className="text-green-400 text-sm">
-              ✅ Found {reviewsWithCoins.length} reviews with analysis data
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {reviewsWithCoins.map(({ coin, analysis }) => (
-              <CoinCard
-                key={coin.id}
-                coin={coin}
-                analysis={analysis}
-              />
-            ))}
-          </div>
-        </div>
-      )
     } else {
       console.log('ReviewsList: No analyses, trying to fetch top coins...')
       // Fallback: show top coins without analysis
