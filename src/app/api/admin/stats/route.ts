@@ -23,6 +23,13 @@ export async function GET() {
       if (latest && latest.length > 0) {
         lastGenerated = latest[0].date as unknown as string
       }
+      // How many created in the last 24h
+      const since = new Date(Date.now() - 24*60*60*1000).toISOString()
+      const { count: created24h } = await supabase
+        .from('analyses')
+        .select('id', { count: 'exact', head: true })
+        .gte('date', since)
+      ;(globalThis as any)._created24h = created24h ?? 0
     } catch (_) {
       // ignore; fall back to memory
     }
@@ -48,6 +55,7 @@ export async function GET() {
       totalCoins,
       lastGenerated: lastGenerated ?? null,
       activeUsers: 0,
+      created24h: (globalThis as any)._created24h ?? 0,
     })
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to compute stats' }, { status: 500 })

@@ -144,6 +144,15 @@ export default function AdminPage() {
               <Clock className="w-8 h-8 text-yellow-400" />
             </div>
           </div>
+          <div className="bg-crypto-secondary/50 rounded-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Created (24h)</p>
+                <p className="text-2xl font-bold text-white">{(health?.created24h ?? 0).toLocaleString?.() || 0}</p>
+              </div>
+              <BarChart3 className="w-8 h-8 text-crypto-accent" />
+            </div>
+          </div>
         </div>
 
         {/* Bulk Generation Section */}
