@@ -93,13 +93,25 @@ export function truncateText(text: string, maxLength: number): string {
 }
 
 export function getTimeAgo(date: string): string {
-  const now = new Date()
-  const past = new Date(date)
-  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000)
+  try {
+    const now = new Date()
+    const past = new Date(date)
+    
+    // Check if the date is valid
+    if (isNaN(past.getTime())) {
+      return 'Invalid date'
+    }
+    
+    const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000)
 
-  if (diffInSeconds < 60) return 'Just now'
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
-  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`
-  return `${Math.floor(diffInSeconds / 2592000)}mo ago`
+    if (diffInSeconds < 0) return 'Future date'
+    if (diffInSeconds < 60) return 'Just now'
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`
+    return `${Math.floor(diffInSeconds / 2592000)}mo ago`
+  } catch (error) {
+    console.error('Error in getTimeAgo:', error, 'for date:', date)
+    return 'Invalid date'
+  }
 }

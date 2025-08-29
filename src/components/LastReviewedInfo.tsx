@@ -46,7 +46,21 @@ export default function LastReviewedInfo({ coinId, coinName, lastReviewed, hasAn
           <div>
             <p className="text-sm text-gray-400">Last Reviewed</p>
             <p className="text-white font-semibold">
-              {lastReviewed ? getTimeAgo(lastReviewed) : 'Never reviewed'}
+              {lastReviewed ? (
+                (() => {
+                  try {
+                    const date = new Date(lastReviewed)
+                    if (isNaN(date.getTime())) {
+                      console.warn('Invalid date in LastReviewedInfo:', lastReviewed)
+                      return 'Invalid date'
+                    }
+                    return getTimeAgo(lastReviewed)
+                  } catch (error) {
+                    console.error('Error processing date in LastReviewedInfo:', error, 'date:', lastReviewed)
+                    return 'Invalid date'
+                  }
+                })()
+              ) : 'Never reviewed'}
             </p>
           </div>
         </div>

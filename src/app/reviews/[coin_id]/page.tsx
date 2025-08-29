@@ -178,7 +178,21 @@ export default async function CoinReviewPage({ params }: PageProps) {
               {/* Last reviewed + CTA */}
               <div className="bg-black/20 rounded-lg p-4 border border-white/5 flex items-center justify-between">
                 <div className="text-sm text-gray-400">
-                  Last Reviewed: <span className="text-white font-semibold">{analysis?.date ? new Date(analysis.date).toLocaleString() : 'Never'}</span>
+                  Last Reviewed: <span className="text-white font-semibold">
+                    {analysis?.date ? (() => {
+                      try {
+                        const date = new Date(analysis.date)
+                        if (isNaN(date.getTime())) {
+                          console.warn('Invalid date in review page:', analysis.date)
+                          return 'Invalid date'
+                        }
+                        return date.toLocaleString()
+                      } catch (error) {
+                        console.error('Error processing date in review page:', error, 'date:', analysis.date)
+                        return 'Invalid date'
+                      }
+                    })() : 'Never'}
+                  </span>
                 </div>
                 <a href="#request-review" className="text-sm text-crypto-accent hover:underline">Request fresh review</a>
               </div>
