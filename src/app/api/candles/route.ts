@@ -80,8 +80,8 @@ export async function GET(req: NextRequest) {
     if (!resolvedBase && coinId) {
       const resolved = await findExchangeBaseViaCG(coinId)
       if (resolved) {
-        resolvedBase = resolved.base
-        console.log(`Candles resolve via CG tickers: ${resolved.exchange}:${resolved.base}${quote}`)
+        resolvedBase = resolved
+        console.log(`Candles resolve via CG tickers: ${resolved}${quote}`)
       }
     }
 
