@@ -1,168 +1,355 @@
-// TradingView/Exchange symbol helpers
+// TradingView symbol mappings for various cryptocurrencies
+// Maps coin IDs to TradingView base symbols
 
-// Allowlist of coinId -> base symbol when we know it for sure
-const COIN_ID_TO_BASE: Record<string, string> = {
+// Valid TradingView symbols that we know work
+const VALID_TV_SYMBOLS = new Set([
+  'BTC', 'ETH', 'BNB', 'ADA', 'SOL', 'DOT', 'AVAX', 'MATIC', 'LINK', 'UNI', 'ATOM', 'LTC', 'ETC', 'XRP', 'BCH', 'FIL', 'ICP', 'NEAR', 'ALGO', 'VET', 'MANA', 'SAND', 'AXS', 'GALA', 'ENJ', 'CHZ', 'HOT', 'BAT', 'ZIL', 'ONE', 'HARMONY', 'FTM', 'CAKE', 'CRV', 'AAVE', 'COMP', 'MKR', 'SNX', 'YFI', 'SUSHI', '1INCH', 'REN', 'BAL', 'KNC', 'ZRX', 'REP', 'NMR', 'MLN', 'STORJ', 'BAND', 'KAVA', 'ROSE', 'IOTA', 'XLM', 'TRX', 'EOS', 'XMR', 'DASH', 'ZEC', 'XTZ', 'NEO', 'WAVES', 'QTUM', 'OMG', 'ZEN', 'RVN', 'BTT', 'WIN', 'ANKR', 'COTI', 'HBAR', 'THETA', 'TFUEL', 'VTHO', 'OCEAN', 'ALPHA', 'AUDIO', 'RLC', 'GRT', 'LPT', 'CLV', 'DYDX', 'IMX', 'OP', 'ARB', 'MASK', 'APT', 'SUI', 'SEI', 'TIA', 'JUP', 'PYTH', 'WIF', 'BONK', 'PEPE', 'SHIB', 'DOGE', 'FLOKI', 'MEME', 'BOOK', 'ORDI', 'RATS', 'MOON', 'CAT', 'WOJAK', 'TURBO', 'POPCAT', 'MYRO', 'BOME', 'SLERF', 'SMOG', 'SLOTH', 'TREMP', 'BODEN', 'MAGA', 'TRUMP', 'BIDEN'
+])
+
+// Map coin IDs to TradingView base symbols
+export const COIN_ID_TO_BASE: Record<string, string> = {
   // Major cryptocurrencies
-  bitcoin: 'BTC',
-  ethereum: 'ETH',
-  binancecoin: 'BNB',
-  solana: 'SOL',
-  ripple: 'XRP',
-  cardano: 'ADA',
-  tron: 'TRX',
-  polkadot: 'DOT',
-  litecoin: 'LTC',
-  dogecoin: 'DOGE',
-  chainlink: 'LINK',
-  'polygon-pos': 'MATIC',
-  'theta-token': 'THETA',
+  'bitcoin': 'BTC',
+  'ethereum': 'ETH',
+  'binancecoin': 'BNB',
+  'cardano': 'ADA',
+  'solana': 'SOL',
+  'polkadot': 'DOT',
   'avalanche-2': 'AVAX',
-  uniswap: 'UNI',
-  cosmos: 'ATOM',
-  stellar: 'XLM',
-  vechain: 'VET',
-  
-  // Additional popular coins
-  'shiba-inu': 'SHIB',
-  'dai': 'DAI',
-  'leo-token': 'LEO',
-  'wrapped-bitcoin': 'WBTC',
-  'monero': 'XMR',
+  'matic-network': 'MATIC',
+  'chainlink': 'LINK',
+  'uniswap': 'UNI',
+  'cosmos': 'ATOM',
+  'litecoin': 'LTC',
   'ethereum-classic': 'ETC',
-  'okb': 'OKB',
-  'cronos': 'CRO',
-  'filecoin': 'FIL',
-  'near': 'NEAR',
-  'algorand': 'ALGO',
-  'hedera-hashgraph': 'HBAR',
-  'aptos': 'APT',
-  'arbitrum': 'ARB',
-  'optimism': 'OP',
-  'manta-network': 'MANTA',
-  'sei-network': 'SEI',
-  'sui': 'SUI',
-  'pepe': 'PEPE',
-  'bonk': 'BONK',
-  'floki': 'FLOKI',
-  'dogwifhat': 'WIF',
-  'book-of-meme': 'BOME',
-  'wif': 'WIF',
-  'bome': 'BOME',
-  
-  // Common variations
+  'ripple': 'XRP',
   'bitcoin-cash': 'BCH',
-  'bitcoin-sv': 'BSV',
-  'eos': 'EOS',
-  'tezos': 'XTZ',
-  'neo': 'NEO',
-  'icon': 'ICX',
-  'qtum': 'QTUM',
-  'omisego': 'OMG',
-  '0x': 'ZRX',
-  'augur': 'REP',
-  'basic-attention-token': 'BAT',
-  'decentraland': 'MANA',
-  'enjin-coin': 'ENJ',
-  'golem': 'GLM',
-  'kyber-network': 'KNC',
-  'loopring': 'LRC',
-  'numeraire': 'NMR',
-  'ocean-protocol': 'OCEAN',
-  'orchid': 'OXT',
-  'sandbox': 'SAND',
-  'skale': 'SKL',
-  'synthetix-network-token': 'SNX',
-  'uma': 'UMA',
-  'yearn-finance': 'YFI',
-  'zilliqa': 'ZIL',
-  
-  // Additional coins that might cause issues
+  'filecoin': 'FIL',
   'internet-computer': 'ICP',
   'internet-computer-protocol': 'ICP',
   'icp': 'ICP',
   'internet-protocol': 'ICP',
-  'ip': 'ICP', // Fix for the IP issue
-  'link': 'LINK',
-  'matic': 'MATIC',
-  'polygon': 'MATIC',
-  'avalanche': 'AVAX',
-  'avax': 'AVAX',
-  'binance-coin': 'BNB',
-  'bnb': 'BNB',
-  'binance': 'BNB',
+  'ip': 'ICP',
+  'near': 'NEAR',
+  'algorand': 'ALGO',
+  'vechain': 'VET',
+  'decentraland': 'MANA',
+  'the-sandbox': 'SAND',
+  'axie-infinity': 'AXS',
+  'gala': 'GALA',
+  'enjincoin': 'ENJ',
+  'chiliz': 'CHZ',
+  'holochain': 'HOT',
+  'basic-attention-token': 'BAT',
+  'zilliqa': 'ZIL',
+  'harmony': 'ONE',
+  'fantom': 'FTM',
+  'pancakeswap-token': 'CAKE',
+  'curve-dao-token': 'CRV',
+  'aave': 'AAVE',
+  'compound-governance-token': 'COMP',
+  'maker': 'MKR',
+  'havven': 'SNX',
+  'yearn-finance': 'YFI',
+  'sushi': 'SUSHI',
+  '1inch': '1INCH',
+  'republic-protocol': 'REN',
+  'balancer': 'BAL',
+  'kyber-network-crystal': 'KNC',
+  '0x': 'ZRX',
+  'augur': 'REP',
+  'numeraire': 'NMR',
+  'melon': 'MLN',
+  'storj': 'STORJ',
+  'band-protocol': 'BAND',
+  'kava': 'KAVA',
+  'oasis-network': 'ROSE',
+  'iota': 'IOTA',
+  'stellar': 'XLM',
+  'tron': 'TRX',
+  'eos': 'EOS',
+  'monero': 'XMR',
+  'dash': 'DASH',
+  'zcash': 'ZEC',
+  'tezos': 'XTZ',
+  'neo': 'NEO',
+  'waves': 'WAVES',
+  'qtum': 'QTUM',
+  'omisego': 'OMG',
+  'horizen': 'ZEN',
+  'ravencoin': 'RVN',
+  'bittorrent': 'BTT',
+  'wink': 'WIN',
+  'ankr': 'ANKR',
+  'coti': 'COTI',
+  'hedera-hashgraph': 'HBAR',
+  'theta-token': 'THETA',
+  'theta-fuel': 'TFUEL',
+  'vechainthor': 'VTHO',
+  'ocean-protocol': 'OCEAN',
+  'alpha-finance': 'ALPHA',
+  'audius': 'AUDIO',
+  'iexec-rlc': 'RLC',
+  'the-graph': 'GRT',
+  'livepeer': 'LPT',
+  'clover-finance': 'CLV',
+  'dydx': 'DYDX',
+  'immutable-x': 'IMX',
+  'optimism': 'OP',
+  'arbitrum': 'ARB',
+  'mask-network': 'MASK',
+  'aptos': 'APT',
+  'sui': 'SUI',
+  'sei-network': 'SEI',
+  'celestia': 'TIA',
+  'jupiter': 'JUP',
+  'pyth-network': 'PYTH',
+  'dogwifhat': 'WIF',
+  'bonk': 'BONK',
+  'pepe': 'PEPE',
+  'shiba-inu': 'SHIB',
+  'dogecoin': 'DOGE',
+  'floki': 'FLOKI',
+  'meme': 'MEME',
+  'book-of-meme': 'BOOK',
+  'ordi': 'ORDI',
+  'rats': 'RATS',
+  'moon': 'MOON',
+  'cat': 'CAT',
+  'wojak': 'WOJAK',
+  'turbo': 'TURBO',
+  'popcat': 'POPCAT',
+  'myro': 'MYRO',
+  'bome': 'BOME',
+  'slerf': 'SLERF',
+  'smog': 'SMOG',
+  'sloth': 'SLOTH',
+  'tremp': 'TREMP',
+  'boden': 'BODEN',
+  'maga': 'MAGA',
+  'trump': 'TRUMP',
+  'biden': 'BIDEN',
+  
+  // Alternative names and variations
   'btc': 'BTC',
   'eth': 'ETH',
+  'bnb': 'BNB',
+  'ada': 'ADA',
+  'sol': 'SOL',
+  'dot': 'DOT',
+  'avax': 'AVAX',
+  'matic': 'MATIC',
+  'link': 'LINK',
+  'uni': 'UNI',
+  'atom': 'ATOM',
+  'ltc': 'LTC',
+  'etc': 'ETC',
+  'xrp': 'XRP',
+  'bch': 'BCH',
+  'fil': 'FIL',
+  'near': 'NEAR',
+  'algo': 'ALGO',
+  'vet': 'VET',
+  'mana': 'MANA',
+  'sand': 'SAND',
+  'axs': 'AXS',
+  'gala': 'GALA',
+  'enj': 'ENJ',
+  'chz': 'CHZ',
+  'hot': 'HOT',
+  'bat': 'BAT',
+  'zil': 'ZIL',
+  'one': 'ONE',
+  'ftm': 'FTM',
+  'cake': 'CAKE',
+  'crv': 'CRV',
+  'aave': 'AAVE',
+  'comp': 'COMP',
+  'mkr': 'MKR',
+  'snx': 'SNX',
+  'yfi': 'YFI',
+  'sushi': 'SUSHI',
+  '1inch': '1INCH',
+  'ren': 'REN',
+  'bal': 'BAL',
+  'knc': 'KNC',
+  'zrx': 'ZRX',
+  'rep': 'REP',
+  'nmr': 'NMR',
+  'mln': 'MLN',
+  'storj': 'STORJ',
+  'band': 'BAND',
+  'kava': 'KAVA',
+  'rose': 'ROSE',
+  'iota': 'IOTA',
+  'xlm': 'XLM',
+  'trx': 'TRX',
+  'eos': 'EOS',
+  'xmr': 'XMR',
+  'dash': 'DASH',
+  'zec': 'ZEC',
+  'xtz': 'XTZ',
+  'neo': 'NEO',
+  'waves': 'WAVES',
+  'qtum': 'QTUM',
+  'omg': 'OMG',
+  'zen': 'ZEN',
+  'rvn': 'RVN',
+  'btt': 'BTT',
+  'win': 'WIN',
+  'ankr': 'ANKR',
+  'coti': 'COTI',
+  'hbar': 'HBAR',
+  'theta': 'THETA',
+  'tfuel': 'TFUEL',
+  'vtho': 'VTHO',
+  'ocean': 'OCEAN',
+  'alpha': 'ALPHA',
+  'audio': 'AUDIO',
+  'rlc': 'RLC',
+  'grt': 'GRT',
+  'lpt': 'LPT',
+  'clv': 'CLV',
+  'dydx': 'DYDX',
+  'imx': 'IMX',
+  'op': 'OP',
+  'arb': 'ARB',
+  'mask': 'MASK',
+  'apt': 'APT',
+  'sui': 'SUI',
+  'sei': 'SEI',
+  'tia': 'TIA',
+  'jup': 'JUP',
+  'pyth': 'PYTH',
+  'wif': 'WIF',
+  'bonk': 'BONK',
+  'shib': 'SHIB',
+  'doge': 'DOGE',
+  'floki': 'FLOKI',
+  'meme': 'MEME',
+  'book': 'BOOK',
+  'ordi': 'ORDI',
+  'rats': 'RATS',
+  'moon': 'MOON',
+  'cat': 'CAT',
+  'wojak': 'WOJAK',
+  'turbo': 'TURBO',
+  'popcat': 'POPCAT',
+  'myro': 'MYRO',
+  'bome': 'BOME',
+  'slerf': 'SLERF',
+  'smog': 'SMOG',
+  'sloth': 'SLOTH',
+  'tremp': 'TREMP',
+  'boden': 'BODEN',
+  'maga': 'MAGA',
+  'trump': 'TRUMP',
+  'biden': 'BIDEN',
 }
 
-// Valid TradingView symbols that we know work
-const VALID_TV_SYMBOLS = new Set([
-  'BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'ADA', 'TRX', 'DOT', 'LTC', 'DOGE', 'LINK', 'MATIC', 'THETA', 'AVAX', 'UNI', 'ATOM', 'XLM', 'VET',
-  'SHIB', 'DAI', 'LEO', 'WBTC', 'XMR', 'ETC', 'OKB', 'CRO', 'FIL', 'NEAR', 'ALGO', 'HBAR', 'APT', 'ARB', 'OP', 'MANTA', 'SEI', 'SUI', 'PEPE', 'BONK', 'FLOKI', 'WIF', 'BOME',
-  'BCH', 'BSV', 'EOS', 'XTZ', 'NEO', 'ICX', 'QTUM', 'OMG', 'ZRX', 'REP', 'BAT', 'MANA', 'ENJ', 'GLM', 'KNC', 'LRC', 'NMR', 'OCEAN', 'OXT', 'SAND', 'SKL', 'SNX', 'UMA', 'YFI', 'ZIL', 'ICP'
-])
+// Alternative exchanges for cryptocurrencies not on Binance
+const ALTERNATIVE_EXCHANGES = [
+  'COINBASE',
+  'KRAKEN', 
+  'KUCOIN',
+  'GATE',
+  'HUOBI',
+  'OKX',
+  'BYBIT',
+  'BITGET',
+  'MEXC',
+  'BITFINEX'
+]
 
-// Synchronous best‑guess used by the client during initial render
-export function getTvBaseSymbol(coinId: string, fallbackSymbol?: string): string | null {
-  // First check our direct mapping
-  const fromMap = COIN_ID_TO_BASE[coinId.toLowerCase()]
-  if (fromMap && VALID_TV_SYMBOLS.has(fromMap)) {
-    return fromMap
+export function getTvBaseSymbol(coinId: string, coinSymbol?: string): string | null {
+  // Convert to lowercase for consistent lookup
+  const normalizedCoinId = coinId.toLowerCase()
+  
+  // First try direct mapping
+  let baseSymbol = COIN_ID_TO_BASE[normalizedCoinId]
+  
+  // If no direct mapping, try using the coin symbol
+  if (!baseSymbol && coinSymbol) {
+    const normalizedSymbol = coinSymbol.toUpperCase()
+    if (VALID_TV_SYMBOLS.has(normalizedSymbol)) {
+      baseSymbol = normalizedSymbol
+    }
   }
   
-  // Try to extract symbol from coinId if it looks like a valid symbol
-  if (coinId && /^[A-Z]{2,12}$/.test(coinId.toUpperCase()) && VALID_TV_SYMBOLS.has(coinId.toUpperCase())) {
-    return coinId.toUpperCase()
+  // Validate the resolved symbol
+  if (baseSymbol && VALID_TV_SYMBOLS.has(baseSymbol)) {
+    return baseSymbol
   }
   
-  // Use fallback symbol if provided and valid
-  if (fallbackSymbol && /^[A-Z]{2,12}$/.test(fallbackSymbol.toUpperCase()) && VALID_TV_SYMBOLS.has(fallbackSymbol.toUpperCase())) {
-    return fallbackSymbol.toUpperCase()
+  // If still no valid symbol, try some common patterns
+  if (!baseSymbol) {
+    // Try uppercase version of coinId
+    const upperCoinId = coinId.toUpperCase()
+    if (VALID_TV_SYMBOLS.has(upperCoinId)) {
+      return upperCoinId
+    }
+    
+    // Try removing common suffixes
+    const withoutSuffix = coinId.replace(/-token$/, '').replace(/-coin$/, '').toUpperCase()
+    if (VALID_TV_SYMBOLS.has(withoutSuffix)) {
+      return withoutSuffix
+    }
   }
   
-  // If we can't resolve a valid symbol, return null instead of an invalid one
-  console.warn(`Could not resolve valid TradingView symbol for coinId: ${coinId}`)
+  console.warn(`TradingView: Could not resolve symbol for coinId: ${coinId}`)
   return null
 }
 
-// Optional server-side resolver using CoinGecko tickers
-// Returns an exchange and base that are likely to work with USDT pairs
-export async function findExchangeBaseViaCG(
-  coinId: string,
-  prefer: string[] = ['BINANCE', 'KUCOIN', 'MEXC']
-): Promise<{ exchange: string; base: string } | null> {
+export async function findExchangeBaseViaCG(coinId: string): Promise<string | null> {
   try {
-    const res = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${coinId}/tickers?include_exchange_logo=false`,
-      { headers: { Accept: 'application/json' }, cache: 'no-store' }
-    )
-    if (!res.ok) return null
-    const data = (await res.json()) as any
-    const tickers: any[] = Array.isArray(data?.tickers) ? data.tickers : []
-    const normalize = (name: string) =>
-      name.toUpperCase().includes('BINANCE')
-        ? 'BINANCE'
-        : name.toUpperCase().includes('KUCOIN')
-        ? 'KUCOIN'
-        : name.toUpperCase().includes('MEXC')
-        ? 'MEXC'
-        : name.toUpperCase()
-
-    for (const ex of prefer) {
-      const t = tickers.find(
-        (t) => normalize(t?.market?.name || '') === ex && (t?.target || '').toUpperCase() === 'USDT'
-      )
-      if (t && t.base && VALID_TV_SYMBOLS.has(String(t.base).toUpperCase())) {
-        return { exchange: ex, base: String(t.base).toUpperCase() }
+    const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}`)
+    if (!response.ok) return null
+    
+    const data = await response.json()
+    const tickers = data.tickers || []
+    
+    // Look for TradingView compatible symbols
+    for (const ticker of tickers) {
+      const base = ticker.base?.toUpperCase()
+      const target = ticker.target?.toUpperCase()
+      
+      // Check if it's a USDT pair and the base symbol is valid
+      if (target === 'USDT' && base && VALID_TV_SYMBOLS.has(base)) {
+        return base
+      }
+      
+      // Check if it's a USD pair and the base symbol is valid
+      if (target === 'USD' && base && VALID_TV_SYMBOLS.has(base)) {
+        return base
       }
     }
-    // If no preferred exchange, pick any USDT pair with valid symbol
-    const anyUsdt = tickers.find((t) => (t?.target || '').toUpperCase() === 'USDT' && VALID_TV_SYMBOLS.has(String(t.base).toUpperCase()))
-    if (anyUsdt?.market?.name && anyUsdt?.base) {
-      return { exchange: normalize(anyUsdt.market.name), base: String(anyUsdt.base).toUpperCase() }
-    }
-  } catch (_) {
-    // ignore
+    
+    return null
+  } catch (error) {
+    console.error('Error fetching from CoinGecko:', error)
+    return null
   }
+}
+
+// Function to get TradingView symbol with exchange fallback
+export async function getTvSymbolWithFallback(coinId: string): Promise<string | null> {
+  // First try Binance
+  const baseSymbol = getTvBaseSymbol(coinId)
+  if (baseSymbol) {
+    return `BINANCE:${baseSymbol}USDT`
+  }
+  
+  // Try CoinGecko for alternative exchanges
+  const cgSymbol = await findExchangeBaseViaCG(coinId)
+  if (cgSymbol) {
+    // Try different exchanges
+    for (const exchange of ALTERNATIVE_EXCHANGES) {
+      const symbol = `${exchange}:${cgSymbol}USDT`
+      // You could add validation here to check if the symbol exists
+      return symbol
+    }
+  }
+  
   return null
 }
 
