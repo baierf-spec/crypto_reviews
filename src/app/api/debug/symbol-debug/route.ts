@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       const cgResult = await findExchangeBaseViaCG(coinId)
       results.coinGeckoResolution = cgResult
       if (cgResult) {
-        results.finalSymbol = `${cgResult.exchange}:${cgResult.base}USDT`
+        results.finalSymbol = `BINANCE:${cgResult}USDT`
       }
     } catch (e) {
       results.coinGeckoResolution = { error: e instanceof Error ? e.message : 'Unknown error' }
