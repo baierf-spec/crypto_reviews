@@ -52,6 +52,26 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
           }
         }
         
+        // If still no symbol, try some common fallbacks
+        if (!resolvedSymbol) {
+          // Try common variations of the coinId
+          const variations = [
+            coinId.replace('-', ''),
+            coinId.replace('-', '_'),
+            coinId.split('-')[0], // Take first part if hyphenated
+            coinId.toUpperCase()
+          ]
+          
+          for (const variation of variations) {
+            const testSymbol = getTvBaseSymbol(variation)
+            if (testSymbol) {
+              resolvedSymbol = testSymbol
+              console.log(`PriceChart: Found symbol via variation: ${variation} -> ${resolvedSymbol}`)
+              break
+            }
+          }
+        }
+        
         if (resolvedSymbol) {
           // Ensure the symbol is in the correct format for TradingView
           // If it's just a base symbol (like "ETH"), convert to "ETHUSDT"
@@ -63,7 +83,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
           setSymbol(resolvedSymbol)
         } else {
           console.error('PriceChart: Could not resolve symbol for coinId:', coinId)
-          setError('Could not load chart data')
+          setError(`Chart not available for ${coinId}`)
         }
       } catch (err) {
         console.error('PriceChart: Error resolving symbol:', err)
@@ -95,6 +115,7 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
         <div className="h-full flex items-center justify-center text-gray-400">
           <div className="text-center">
             <p className="text-sm">{error || 'Chart not available'}</p>
+            <p className="text-xs mt-2">TradingView data not available for this coin</p>
           </div>
         </div>
       </div>

@@ -75,23 +75,55 @@ const COIN_ID_TO_BASE: Record<string, string> = {
   'uma': 'UMA',
   'yearn-finance': 'YFI',
   'zilliqa': 'ZIL',
+  
+  // Additional coins that might cause issues
+  'internet-computer': 'ICP',
+  'internet-computer-protocol': 'ICP',
+  'icp': 'ICP',
+  'internet-protocol': 'ICP',
+  'ip': 'ICP', // Fix for the IP issue
+  'chainlink': 'LINK',
+  'link': 'LINK',
+  'matic': 'MATIC',
+  'polygon': 'MATIC',
+  'avalanche': 'AVAX',
+  'avax': 'AVAX',
+  'binance-coin': 'BNB',
+  'bnb': 'BNB',
+  'binance': 'BNB',
+  'bitcoin': 'BTC',
+  'btc': 'BTC',
+  'ethereum': 'ETH',
+  'eth': 'ETH',
 }
+
+// Valid TradingView symbols that we know work
+const VALID_TV_SYMBOLS = new Set([
+  'BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'ADA', 'TRX', 'DOT', 'LTC', 'DOGE', 'LINK', 'MATIC', 'THETA', 'AVAX', 'UNI', 'ATOM', 'XLM', 'VET',
+  'SHIB', 'DAI', 'LEO', 'WBTC', 'XMR', 'ETC', 'OKB', 'CRO', 'FIL', 'NEAR', 'ALGO', 'HBAR', 'APT', 'ARB', 'OP', 'MANTA', 'SEI', 'SUI', 'PEPE', 'BONK', 'FLOKI', 'WIF', 'BOME',
+  'BCH', 'BSV', 'EOS', 'XTZ', 'NEO', 'ICX', 'QTUM', 'OMG', 'ZRX', 'REP', 'BAT', 'MANA', 'ENJ', 'GLM', 'KNC', 'LRC', 'NMR', 'OCEAN', 'OXT', 'SAND', 'SKL', 'SNX', 'UMA', 'YFI', 'ZIL', 'ICP'
+])
 
 // Synchronous best‑guess used by the client during initial render
 export function getTvBaseSymbol(coinId: string, fallbackSymbol?: string): string | null {
-  const fromMap = COIN_ID_TO_BASE[coinId]
-  if (fromMap) return fromMap
+  // First check our direct mapping
+  const fromMap = COIN_ID_TO_BASE[coinId.toLowerCase()]
+  if (fromMap && VALID_TV_SYMBOLS.has(fromMap)) {
+    return fromMap
+  }
   
-  // Try to extract symbol from coinId if it looks like a symbol
-  if (coinId && /^[A-Z]{2,12}$/.test(coinId.toUpperCase())) {
+  // Try to extract symbol from coinId if it looks like a valid symbol
+  if (coinId && /^[A-Z]{2,12}$/.test(coinId.toUpperCase()) && VALID_TV_SYMBOLS.has(coinId.toUpperCase())) {
     return coinId.toUpperCase()
   }
   
   // Use fallback symbol if provided and valid
-  if (fallbackSymbol && /^[A-Z]{2,12}$/.test(fallbackSymbol.toUpperCase())) {
+  if (fallbackSymbol && /^[A-Z]{2,12}$/.test(fallbackSymbol.toUpperCase()) && VALID_TV_SYMBOLS.has(fallbackSymbol.toUpperCase())) {
     return fallbackSymbol.toUpperCase()
   }
   
+  // If we can't resolve a valid symbol, return null instead of an invalid one
+  console.warn(`Could not resolve valid TradingView symbol for coinId: ${coinId}`)
   return null
 }
 
@@ -122,12 +154,12 @@ export async function findExchangeBaseViaCG(
       const t = tickers.find(
         (t) => normalize(t?.market?.name || '') === ex && (t?.target || '').toUpperCase() === 'USDT'
       )
-      if (t && t.base) {
+      if (t && t.base && VALID_TV_SYMBOLS.has(String(t.base).toUpperCase())) {
         return { exchange: ex, base: String(t.base).toUpperCase() }
       }
     }
-    // If no preferred exchange, pick any USDT pair
-    const anyUsdt = tickers.find((t) => (t?.target || '').toUpperCase() === 'USDT')
+    // If no preferred exchange, pick any USDT pair with valid symbol
+    const anyUsdt = tickers.find((t) => (t?.target || '').toUpperCase() === 'USDT' && VALID_TV_SYMBOLS.has(String(t.base).toUpperCase()))
     if (anyUsdt?.market?.name && anyUsdt?.base) {
       return { exchange: normalize(anyUsdt.market.name), base: String(anyUsdt.base).toUpperCase() }
     }
