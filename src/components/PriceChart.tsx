@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { getTvBaseSymbol } from '@/lib/tvSymbols'
+import { getTvBaseSymbol, getTvSymbolWithFallback } from '@/lib/tvSymbols'
 
 const TradingViewChart = dynamic(() => import('./TradingViewChart'), { ssr: false })
 
@@ -26,8 +26,16 @@ export default function PriceChart({ coinId, heightClass = 'h-96' }: PriceChartP
       setError(null)
       
       try {
-        // First try immediate symbol resolution
-        let resolvedSymbol = getTvBaseSymbol(coinId)
+        // First try the new fallback function
+        let resolvedSymbol = await getTvSymbolWithFallback(coinId)
+        
+        if (!resolvedSymbol) {
+          // Try immediate symbol resolution
+          const baseSymbol = getTvBaseSymbol(coinId)
+          if (baseSymbol) {
+            resolvedSymbol = `BINANCE:${baseSymbol}USDT`
+          }
+        }
         
         if (!resolvedSymbol) {
           // Try to get coin data to extract symbol
@@ -36,7 +44,10 @@ export default function PriceChart({ coinId, heightClass = 'h-96' }: PriceChartP
             const coinData = await response.json()
             const coinSymbol = coinData?.data?.symbol || coinData?.symbol
             if (coinSymbol) {
-              resolvedSymbol = getTvBaseSymbol(coinId, coinSymbol)
+              const baseSymbol = getTvBaseSymbol(coinId, coinSymbol)
+              if (baseSymbol) {
+                resolvedSymbol = `BINANCE:${baseSymbol}USDT`
+              }
             }
           }
         }
@@ -63,9 +74,9 @@ export default function PriceChart({ coinId, heightClass = 'h-96' }: PriceChartP
           ]
           
           for (const variation of variations) {
-            const testSymbol = getTvBaseSymbol(variation)
-            if (testSymbol) {
-              resolvedSymbol = testSymbol
+            const baseSymbol = getTvBaseSymbol(variation)
+            if (baseSymbol) {
+              resolvedSymbol = `BINANCE:${baseSymbol}USDT`
               console.log(`PriceChart: Found symbol via variation: ${variation} -> ${resolvedSymbol}`)
               break
             }
@@ -73,12 +84,6 @@ export default function PriceChart({ coinId, heightClass = 'h-96' }: PriceChartP
         }
         
         if (resolvedSymbol) {
-          // Ensure the symbol is in the correct format for TradingView
-          // If it's just a base symbol (like "ETH"), convert to "ETHUSDT"
-          if (!resolvedSymbol.includes(':') && !resolvedSymbol.includes('USDT')) {
-            resolvedSymbol = `${resolvedSymbol}USDT`
-          }
-          
           console.log('PriceChart: Resolved symbol:', resolvedSymbol)
           setSymbol(resolvedSymbol)
         } else {
