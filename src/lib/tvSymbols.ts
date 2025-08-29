@@ -82,7 +82,6 @@ const COIN_ID_TO_BASE: Record<string, string> = {
   'icp': 'ICP',
   'internet-protocol': 'ICP',
   'ip': 'ICP', // Fix for the IP issue
-  'chainlink': 'LINK',
   'link': 'LINK',
   'matic': 'MATIC',
   'polygon': 'MATIC',
@@ -91,9 +90,7 @@ const COIN_ID_TO_BASE: Record<string, string> = {
   'binance-coin': 'BNB',
   'bnb': 'BNB',
   'binance': 'BNB',
-  'bitcoin': 'BTC',
   'btc': 'BTC',
-  'ethereum': 'ETH',
   'eth': 'ETH',
 }
 
