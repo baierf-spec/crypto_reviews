@@ -13,7 +13,7 @@ CREATE TABLE coins_queue (
 -- Analyses table
 CREATE TABLE analyses (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  coin_id TEXT NOT NULL,
+  coin_id TEXT NOT NULL UNIQUE,
   coin_name TEXT NOT NULL,
   coin_symbol TEXT NOT NULL,
   content TEXT NOT NULL,
@@ -80,3 +80,7 @@ CREATE POLICY "Allow authenticated insert to user_votes" ON user_votes
 
 CREATE POLICY "Allow authenticated insert to comments" ON comments
   FOR INSERT WITH CHECK (true);
+
+-- Add update policies for analyses table
+CREATE POLICY "Allow authenticated update to analyses" ON analyses
+  FOR UPDATE USING (true);

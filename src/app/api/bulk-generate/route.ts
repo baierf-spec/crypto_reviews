@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getTopCoins, getCoinData } from '@/lib/apis'
 import { saveAnalysis } from '@/lib/supabase'
-import { formatMarkdownToHtml } from '@/lib/markdownFormatter'
+import { formatMarkdownToHtml } from '@/app/api/generate-review/route'
 import { saveAnalysisToMemory } from '@/lib/analyses'
 import { buildAnalysisFromCoin } from '@/lib/analysisGenerator'
 

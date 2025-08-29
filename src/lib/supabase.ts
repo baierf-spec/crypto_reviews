@@ -115,31 +115,63 @@ export async function updateCoinAnalysisDate(coin_id: string) {
 
 export async function saveAnalysis(analysis: any) {
   try {
+    console.log(`Supabase: Attempting to save analysis for ${analysis.coin_id}`)
     const client = getServerClient()
+    
     // Do not send client-generated id to a UUID column; let DB generate it
     const { id: _ignoreId, ...rest } = analysis || {}
+    
     // Upsert on coin_id so we can refresh existing reviews
-    const { error } = await client
+    const { data, error } = await client
       .from('analyses')
       .upsert([{ ...rest, date: new Date().toISOString() }], { onConflict: 'coin_id' })
+      .select('id, coin_id')
 
     if (error) {
+      console.error(`Supabase: Upsert failed for ${analysis.coin_id}:`, error)
+      
       // If the table is missing a unique constraint on coin_id, the upsert will fail.
       // Fallback to delete+insert to guarantee overwrite semantics.
-      console.log('Upsert failed, attempting delete+insert fallback:', error)
+      console.log(`Supabase: Attempting delete+insert fallback for ${analysis.coin_id}`)
       try {
-        await client.from('analyses').delete().eq('coin_id', (rest as any).coin_id)
-        const { error: insErr } = await client
+        // First delete existing record
+        const { error: deleteError } = await client
+          .from('analyses')
+          .delete()
+          .eq('coin_id', (rest as any).coin_id)
+        
+        if (deleteError) {
+          console.error(`Supabase: Delete failed for ${analysis.coin_id}:`, deleteError)
+        }
+        
+        // Then insert new record
+        const { data: insertData, error: insertError } = await client
           .from('analyses')
           .insert([{ ...rest, date: new Date().toISOString() }])
-        if (insErr) throw insErr
+          .select('id, coin_id')
+        
+        if (insertError) {
+          console.error(`Supabase: Insert failed for ${analysis.coin_id}:`, insertError)
+          throw insertError
+        }
+        
+        console.log(`Supabase: Fallback save successful for ${analysis.coin_id}:`, insertData)
+        return true
       } catch (fallbackErr) {
+        console.error(`Supabase: Fallback save failed for ${analysis.coin_id}:`, fallbackErr)
         throw fallbackErr
       }
     }
+    
+    console.log(`Supabase: Save successful for ${analysis.coin_id}:`, data)
     return true
   } catch (error) {
-    console.log('Supabase saveAnalysis failed:', error)
+    console.error(`Supabase: saveAnalysis failed for ${analysis?.coin_id}:`, error)
+    console.error('Error details:', {
+      coin_id: analysis?.coin_id,
+      error_message: error instanceof Error ? error.message : 'Unknown error',
+      error_stack: error instanceof Error ? error.stack : undefined
+    })
     return false
   }
 }

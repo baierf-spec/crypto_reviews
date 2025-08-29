@@ -1,1 +1,6 @@
 [33ma909eca[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m fix(candles): remove duplicate dynamic export
+[33m64b3d39[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m Fix build error: recreate markdownFormatter and update bulk-generate imports
+[33m83429ae[m[33m ([m[1;31morigin/main[m[33m)[m Fix build error: move formatMarkdownToHtml to separate file and update imports
+[33mdd0095b[m Update coin review page with comprehensive AI analysis, technical indicators, sentiment breakdown, and price predictions
+[33m3cc918f[m Expand analysis content to make Full Analysis more comprehensive and detailed
+[33mca6e6d5[m Add debugging to reviews page to investigate why Full Analysis content is not showing

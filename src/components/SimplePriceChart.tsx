@@ -142,3 +142,5 @@ export default function SimplePriceChart({ coinId, heightClass = 'h-64' }: Simpl
     </div>
   )
 }
+
+

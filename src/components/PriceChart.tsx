@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { getTvBaseSymbol } from '@/lib/tvSymbols'
 
 const TradingViewChart = dynamic(() => import('./TradingViewChart'), { ssr: false })
 
@@ -12,26 +13,94 @@ interface PriceChartProps {
 
 export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartProps) {
   const [mounted, setMounted] = useState(false)
+  const [symbol, setSymbol] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
     console.log('PriceChart: Starting to load TradingView chart for coinId:', coinId)
+    
+    async function resolveSymbol() {
+      setLoading(true)
+      setError(null)
+      
+      try {
+        // First try immediate symbol resolution
+        let resolvedSymbol = getTvBaseSymbol(coinId)
+        
+        if (!resolvedSymbol) {
+          // Try to get coin data to extract symbol
+          const response = await fetch(`/api/coins/${coinId}`)
+          if (response.ok) {
+            const coinData = await response.json()
+            const coinSymbol = coinData?.data?.symbol || coinData?.symbol
+            if (coinSymbol) {
+              resolvedSymbol = getTvBaseSymbol(coinId, coinSymbol)
+            }
+          }
+        }
+        
+        if (!resolvedSymbol) {
+          // Try TradingView symbol resolution API
+          const tvResponse = await fetch(`/api/tv/resolve?coinId=${encodeURIComponent(coinId)}`)
+          if (tvResponse.ok) {
+            const tvData = await tvResponse.json()
+            if (tvData.ok && tvData.symbol) {
+              resolvedSymbol = tvData.symbol
+            }
+          }
+        }
+        
+        if (resolvedSymbol) {
+          console.log('PriceChart: Resolved symbol:', resolvedSymbol)
+          setSymbol(resolvedSymbol)
+        } else {
+          console.error('PriceChart: Could not resolve symbol for coinId:', coinId)
+          setError('Could not load chart data')
+        }
+      } catch (err) {
+        console.error('PriceChart: Error resolving symbol:', err)
+        setError('Failed to load chart')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    resolveSymbol()
   }, [coinId])
 
-  if (!mounted) {
-  return (
-    <div className={heightClass}>
+  if (!mounted || loading) {
+    return (
+      <div className={heightClass}>
         <div className="h-full flex items-center justify-center text-gray-400">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-crypto-accent mx-auto mb-2"></div>
             <p className="text-sm">Loading TradingView chart...</p>
           </div>
         </div>
-    </div>
-  )
+      </div>
+    )
   }
 
-  return <TradingViewChart coinId={coinId} heightClass={heightClass} />
+  if (error || !symbol) {
+    return (
+      <div className={heightClass}>
+        <div className="h-full flex items-center justify-center text-gray-400">
+          <div className="text-center">
+            <p className="text-sm">{error || 'Chart not available'}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Convert heightClass to numeric height for TradingViewChart
+  const height = heightClass === 'h-64' ? 256 : 
+                 heightClass === 'h-96' ? 384 : 
+                 heightClass === 'h-[300px]' ? 300 : 300
+
+  return <TradingViewChart symbol={symbol} height={height} />
 }
 
 
