@@ -1,247 +1,181 @@
-# Crypto AI Insights - Bulk Analysis Generation System
+# Crypto AI Insights
 
-## 🚀 Overview
+A comprehensive cryptocurrency analysis platform that provides AI-powered reviews, technical analysis, and market insights for various cryptocurrencies.
 
-This system automatically generates AI-powered cryptocurrency analyses for SEO optimization and organic traffic growth. It can analyze 1000+ cryptocurrencies and create comprehensive, Google-indexed content.
+## 🚀 Features
 
-## ✨ Features
+- **AI-Powered Reviews**: Generate detailed cryptocurrency analyses using OpenAI
+- **TradingView Charts**: Interactive price charts with volume analysis
+- **Technical Analysis**: Moving averages, Bollinger Bands, MACD indicators
+- **Social Sentiment**: Twitter and Reddit sentiment analysis
+- **Price Predictions**: AI-generated price forecasts with confidence levels
+- **Database Persistence**: Reviews saved to Supabase database
+- **Responsive Design**: Mobile-friendly interface
 
-### SEO Optimization
-- **1000+ Unique Pages**: Each cryptocurrency gets its own analysis page
-- **Fresh Content**: AI-generated analyses updated regularly
-- **Long-tail Keywords**: Comprehensive content for each coin
-- **Structured Data**: SEO-friendly markup and metadata
-- **Sitemap Generation**: Automatic XML sitemap for search engines
+## 🛠️ Recent Fixes (Latest Update)
 
-### Analysis Features
-- **Market Sentiment Analysis**: Social media sentiment and market psychology
-- **On-Chain Data**: Network health, transaction volume, adoption metrics
-- **Eco-Friendliness Rating**: Environmental impact assessment
-- **Price Predictions**: AI-generated short and medium-term forecasts
-- **Technical Analysis**: Support/resistance levels and market trends
+### Database Issues Fixed
+- ✅ **Review Persistence**: Fixed issue where generated reviews were disappearing
+- ✅ **Unique Constraint**: Added `UNIQUE` constraint on `coin_id` in analyses table
+- ✅ **Upsert Functionality**: Reviews can now be updated and persist after server restart
+- ✅ **Enhanced Error Handling**: Better logging and fallback mechanisms
 
-### Dual-Speed System
-- **Fast Generation ($2.99)**: 5-10 minutes, premium service
-- **Free Queue**: 24-48 hours, community-driven
+### TradingView Chart Improvements
+- ✅ **Symbol Resolution**: Fixed coin ID to symbol conversion for charts
+- ✅ **Volume Display**: Removed duplicate volume tables, now shows as overlay
+- ✅ **Better Functionality**: Enhanced chart configuration and error handling
+- ✅ **Responsive Design**: Charts adapt to different screen sizes
 
-## 🛠️ Setup Instructions
+## 🏗️ Tech Stack
 
-### 1. Environment Variables
+- **Frontend**: Next.js 14, React, TypeScript
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Database**: Supabase (PostgreSQL)
+- **Charts**: TradingView Widget, Chart.js
+- **AI**: OpenAI GPT-4
+- **APIs**: CoinGecko, CoinMarketCap
 
-Create `.env.local` file:
+## 📦 Installation
 
-```bash
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/baierf-spec/crypto_reviews.git
+   cd crypto_reviews
+   ```
 
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# App Configuration
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+3. **Set up environment variables**
+   Create a `.env.local` file with:
+   ```env
+   OPENAI_API_KEY=your_openai_api_key
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE=your_supabase_service_role
+   COINMARKETCAP_API_KEY=your_coinmarketcap_api_key
+   ```
 
-# Cron Job Secret (for automatic updates)
-CRON_SECRET=your_cron_secret_key
-```
+4. **Set up database**
+   - Go to your Supabase dashboard
+   - Run the SQL commands from `supabase-schema.sql`
+   - Run the migration from `migrate-add-unique-constraint.sql`
 
-### 2. Database Setup
+5. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-Run the SQL schema in your Supabase SQL Editor:
+## 🗄️ Database Setup
+
+### Required Migration
+To fix review persistence issues, run this migration in your Supabase SQL Editor:
 
 ```sql
--- Create tables for analyses, queue, votes, and comments
--- (See supabase-schema.sql for complete schema)
+-- Add unique constraint on coin_id
+ALTER TABLE analyses ADD CONSTRAINT analyses_coin_id_unique UNIQUE (coin_id);
 ```
 
-### 3. Install Dependencies
+See `FIX-DATABASE.md` for detailed instructions.
 
+## 🧪 Testing
+
+### Database Connection Test
 ```bash
-npm install
+node test-supabase-simple.js
 ```
 
-### 4. Start Development Server
+### API Endpoints Test
+- Database save test: `http://localhost:3000/api/debug/test-save`
+- Health check: `http://localhost:3000/api/health`
 
-```bash
-npm run dev
+## 📁 Project Structure
+
+```
+src/
+├── app/                    # Next.js app router
+│   ├── api/               # API routes
+│   ├── reviews/           # Review pages
+│   └── ...
+├── components/            # React components
+│   ├── TradingViewChart.tsx
+│   ├── PriceChart.tsx
+│   └── ...
+├── lib/                   # Utility functions
+│   ├── supabase.ts       # Database operations
+│   ├── analysisGenerator.ts
+│   └── ...
+└── types/                 # TypeScript types
 ```
 
-## 📊 Admin Dashboard
+## 🔧 Key Components
 
-Access the admin dashboard at `/admin` to:
+### TradingView Chart
+- **File**: `src/components/TradingViewChart.tsx`
+- **Features**: Interactive charts, volume overlay, technical indicators
+- **Configuration**: Dark theme, responsive design, error handling
 
-- **Bulk Generate Analyses**: Create 100, 500, or 1000 analyses at once
-- **Monitor Progress**: Track generation success/failure rates
-- **SEO Metrics**: View organic traffic benefits
-- **System Performance**: Monitor API response times and success rates
-
-### Bulk Generation Options
-
-1. **Generate 100**: Quick start for testing
-2. **Generate 500**: Medium-scale content creation
-3. **Generate 1000**: Full SEO optimization
-
-## 🔄 Automatic Updates
-
-The system includes automatic analysis updates:
-
-- **Cron Job**: Updates analyses older than 7 days
-- **Fresh Data**: Always uses current market data
-- **SEO Benefits**: Keeps content fresh for search engines
-
-### Setting Up Cron Jobs
-
-For Vercel deployment, add to `vercel.json`:
-
-```json
-{
-  "crons": [
-    {
-      "path": "/api/cron/update-analyses",
-      "schedule": "0 2 * * *"
-    }
-  ]
-}
-```
-
-## 📈 SEO Benefits
-
-### Content Strategy
-- **1000+ Words per Analysis**: Comprehensive content for each coin
-- **Technical Analysis**: Professional-grade market insights
-- **Structured Data**: Rich snippets for search results
-- **Internal Linking**: Cross-references between related coins
-
-### Organic Traffic Growth
-- **Long-tail Keywords**: "Bitcoin price prediction 2024", "Ethereum technical analysis"
-- **Fresh Content**: Regular updates keep pages current
-- **High Word Count**: 1000+ words per page for better ranking
-- **User Engagement**: Interactive elements increase time on page
-
-## 🎯 Usage Examples
-
-### 1. Generate Bitcoin Analysis
-
-```bash
-# Fast generation (5-10 minutes)
-curl -X POST http://localhost:3000/api/generate-review-now \
-  -H "Content-Type: application/json" \
-  -d '{"coin_id":"bitcoin","coin_name":"Bitcoin","coin_symbol":"BTC"}'
-```
-
-### 2. Bulk Generate 1000 Analyses
-
-```bash
-# Via admin dashboard or API
-curl -X POST http://localhost:3000/api/bulk-generate \
-  -H "Content-Type: application/json" \
-  -d '{"limit":1000,"batch_size":10}'
-```
-
-### 3. View Generated Analysis
-
-Visit: `http://localhost:3000/reviews/bitcoin`
-
-## 📊 Monitoring & Analytics
-
-### Admin Dashboard Metrics
-- **Total Analyses**: Number of generated analyses
-- **Success Rate**: Percentage of successful generations
-- **Last Generated**: Timestamp of last bulk generation
-- **Active Users**: Current user engagement
-
-### SEO Performance
-- **Indexed Pages**: Number of pages in Google index
-- **Organic Traffic**: Search engine traffic growth
-- **Keyword Rankings**: Position for target keywords
-- **Page Speed**: Core Web Vitals performance
-
-## 🔧 API Endpoints
+### Database Operations
+- **File**: `src/lib/supabase.ts`
+- **Features**: CRUD operations, upsert functionality, error handling
+- **Fallback**: Memory storage when database is unavailable
 
 ### Analysis Generation
-- `POST /api/generate-review-now` - Fast generation ($2.99)
-- `POST /api/request-review` - Queue generation (free)
-- `POST /api/bulk-generate` - Bulk generation for SEO
-
-### Data Retrieval
-- `GET /api/analyses/{coin_id}` - Get specific analysis
-- `GET /api/analyses` - Get latest analyses
-- `GET /sitemap.xml` - Dynamic sitemap
-
-### Cron Jobs
-- `POST /api/cron/update-analyses` - Update old analyses
-- `POST /api/cron/daily-reviews` - Daily review generation
-
-## 🎨 UI Components
-
-### LastReviewedInfo Component
-Shows analysis status and "Request New Review" button:
-- **Last Reviewed Time**: When analysis was generated
-- **Analysis Status**: Available/Not Available indicator
-- **Request Button**: Links to review selection page
-
-### RequestReviewForm Component
-Dual-speed analysis request form:
-- **Premium Fast Track**: $2.99, 5-10 minutes
-- **Community Queue**: Free, 24-48 hours
-- **Enhanced Benefits**: Detailed value proposition
+- **File**: `src/lib/analysisGenerator.ts`
+- **Features**: AI-powered analysis, sentiment analysis, price predictions
 
 ## 🚀 Deployment
 
-### Vercel Deployment
+### Vercel (Recommended)
 1. Connect your GitHub repository to Vercel
 2. Set environment variables in Vercel dashboard
 3. Deploy automatically on push to main branch
 
-### Environment Variables for Production
+### Manual Deployment
 ```bash
-NEXT_PUBLIC_APP_URL=https://your-domain.com
-CRON_SECRET=your_secure_cron_secret
+npm run build
+npm start
 ```
 
-## 📈 Expected Results
+## 🔍 Troubleshooting
 
-### SEO Impact (After 1000 Analyses)
-- **1000+ Indexed Pages**: Each coin gets its own page
-- **Long-tail Keywords**: 5000+ unique keyword opportunities
-- **Organic Traffic**: 50-200% increase in 3-6 months
-- **Search Rankings**: Top 10 positions for coin-specific keywords
+### Reviews Not Saving
+1. Check Supabase connection: `node test-supabase-simple.js`
+2. Verify unique constraint: Run migration in Supabase
+3. Check environment variables
+4. Test save functionality: `/api/debug/test-save`
 
-### Content Quality
-- **Word Count**: 1000+ words per analysis
-- **Update Frequency**: Weekly automatic updates
-- **User Engagement**: Interactive voting and comments
-- **Technical Depth**: Professional-grade analysis
+### Charts Not Loading
+1. Verify symbol resolution in `PriceChart.tsx`
+2. Check TradingView widget configuration
+3. Ensure coin ID to symbol mapping exists
 
-## 🛡️ Security & Rate Limiting
+### Database Issues
+1. Check Supabase logs
+2. Verify RLS policies
+3. Test connection with service role key
 
-- **API Rate Limiting**: Prevents abuse of generation endpoints
-- **Cron Authentication**: Secure cron job execution
-- **Input Validation**: Sanitized user inputs
-- **Error Handling**: Graceful failure recovery
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
 ## 📞 Support
 
-For questions or issues:
-1. Check the admin dashboard for system status
-2. Review console logs for error details
-3. Test individual endpoints for functionality
-4. Monitor bulk generation progress
-
-## 🔄 Maintenance
-
-### Regular Tasks
-- **Monitor Generation Success**: Check admin dashboard weekly
-- **Update Analyses**: Automatic via cron jobs
-- **Review SEO Performance**: Track organic traffic growth
-- **Backup Data**: Export analyses periodically
-
-### Performance Optimization
-- **Memory Management**: Clear old analyses if needed
-- **API Optimization**: Monitor response times
-- **Database Cleanup**: Remove old queue entries
-- **Cache Management**: Optimize for faster loading
+For issues and questions:
+- Check the troubleshooting section
+- Review `FIX-DATABASE.md` for database issues
+- Open an issue on GitHub
 
 ---
 
-**Built with Next.js, TypeScript, Tailwind CSS, and OpenAI GPT-4**
+**Note**: This project requires API keys for OpenAI, Supabase, and CoinMarketCap. Make sure to set up all environment variables before running.
