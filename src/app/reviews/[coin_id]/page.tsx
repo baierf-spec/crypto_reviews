@@ -186,7 +186,7 @@ export default async function CoinReviewPage({ params }: PageProps) {
               <div className="bg-crypto-secondary/50 rounded-lg p-6 shadow-lg">
                 <h3 className="text-lg font-semibold text-white mb-4">30‑Day Price</h3>
                 <Suspense fallback={<div className="h-[300px] flex items-center justify-center text-gray-400">Loading chart...</div>}>
-                  <PriceChart coinId={c.id} heightClass="h-[300px]" />
+                  <PriceChart coinId={c.id} heightClass="h-[400px]" />
                 </Suspense>
               </div>
 

@@ -13,7 +13,7 @@ interface PriceData {
   price: number
 }
 
-export default function SimplePriceChart({ coinId, heightClass = 'h-64' }: SimplePriceChartProps) {
+export default function SimplePriceChart({ coinId, heightClass = 'h-80' }: SimplePriceChartProps) {
   const [priceData, setPriceData] = useState<PriceData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

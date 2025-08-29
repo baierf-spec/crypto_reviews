@@ -11,7 +11,7 @@ interface PriceChartProps {
   heightClass?: string
 }
 
-export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartProps) {
+export default function PriceChart({ coinId, heightClass = 'h-96' }: PriceChartProps) {
   const [mounted, setMounted] = useState(false)
   const [symbol, setSymbol] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -126,9 +126,9 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   // Subtract some height for the interval selector UI
   const baseHeight = heightClass === 'h-64' ? 256 : 
                      heightClass === 'h-96' ? 384 : 
-                     heightClass === 'h-[300px]' ? 300 : 300
+                     heightClass === 'h-[300px]' ? 300 : 384 // Default to h-96 equivalent
   
-  const chartHeight = Math.max(200, baseHeight - 60) // Subtract space for interval selector
+  const chartHeight = Math.max(300, baseHeight - 60) // Subtract space for interval selector, minimum 300px
 
   return <TradingViewChart symbol={symbol} height={chartHeight} />
 }

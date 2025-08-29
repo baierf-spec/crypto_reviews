@@ -15,7 +15,7 @@ interface Props {
 
 type TimeInterval = '1D' | '1W' | '1M' | '3M' | '6M' | '1Y'
 
-export default function TradingViewChart({ symbol, height = 300 }: Props) {
+export default function TradingViewChart({ symbol, height = 400 }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const widgetRef = useRef<any>(null)
   const [error, setError] = useState<string | null>(null)
@@ -142,7 +142,7 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
   }
 
   return (
-    <div>
+    <div className="w-full">
       {/* Time Interval Selector */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">Price Chart</h3>
@@ -167,7 +167,8 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
       <div 
         id={'tv_' + (symbol.includes(':') ? symbol : `BINANCE:${symbol}`).replace(/[^A-Z0-9:]/gi, '_')} 
         ref={container} 
-        style={{ height }} 
+        style={{ height, width: '100%' }} 
+        className="w-full"
       />
     </div>
   )
