@@ -53,6 +53,12 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
         }
         
         if (resolvedSymbol) {
+          // Ensure the symbol is in the correct format for TradingView
+          // If it's just a base symbol (like "ETH"), convert to "ETHUSDT"
+          if (!resolvedSymbol.includes(':') && !resolvedSymbol.includes('USDT')) {
+            resolvedSymbol = `${resolvedSymbol}USDT`
+          }
+          
           console.log('PriceChart: Resolved symbol:', resolvedSymbol)
           setSymbol(resolvedSymbol)
         } else {

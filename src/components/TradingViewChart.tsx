@@ -28,8 +28,21 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
     script.onload = () => {
       const tv = (window as any).TradingView
       if (tv) {
-        const fullSymbol = symbol.includes(':') ? symbol : `BINANCE:${symbol.toUpperCase()}`
+        // Fix symbol construction to ensure proper USDT pairs
+        let fullSymbol = symbol
+        if (!symbol.includes(':')) {
+          // If no exchange prefix, add BINANCE and ensure USDT suffix
+          const baseSymbol = symbol.toUpperCase()
+          fullSymbol = `BINANCE:${baseSymbol}${baseSymbol.endsWith('USDT') ? '' : 'USDT'}`
+        } else if (!symbol.includes('USDT')) {
+          // If has exchange prefix but no USDT, add USDT
+          const [exchange, base] = symbol.split(':')
+          fullSymbol = `${exchange}:${base.toUpperCase()}USDT`
+        }
+        
         const containerId = 'tv_' + fullSymbol.replace(/[^A-Z0-9:]/gi, '_')
+        
+        console.log('TradingView: Loading symbol:', fullSymbol)
         
         try {
           widgetRef.current = new tv.widget({
