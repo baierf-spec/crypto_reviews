@@ -13,10 +13,13 @@ interface Props {
   height?: number
 }
 
+type TimeInterval = '1D' | '1W' | '1M' | '3M' | '6M' | '1Y'
+
 export default function TradingViewChart({ symbol, height = 300 }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const widgetRef = useRef<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const [selectedInterval, setSelectedInterval] = useState<TimeInterval>('1M') // Default to 1 month (30 days)
 
   useEffect(() => {
     if (!container.current) return
@@ -42,13 +45,13 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
         
         const containerId = 'tv_' + fullSymbol.replace(/[^A-Z0-9:]/gi, '_')
         
-        console.log('TradingView: Loading symbol:', fullSymbol)
+        console.log('TradingView: Loading symbol:', fullSymbol, 'with interval:', selectedInterval)
         
         try {
           widgetRef.current = new tv.widget({
             autosize: true,
             symbol: fullSymbol,
-            interval: '60',
+            interval: selectedInterval,
             timezone: 'Etc/UTC',
             theme: 'dark',
             style: '1',
@@ -122,7 +125,11 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
         container.current.removeChild(script)
       }
     }
-  }, [symbol])
+  }, [symbol, selectedInterval])
+
+  const handleIntervalChange = (interval: TimeInterval) => {
+    setSelectedInterval(interval)
+  }
 
   if (error) {
     return (
@@ -135,10 +142,33 @@ export default function TradingViewChart({ symbol, height = 300 }: Props) {
   }
 
   return (
-    <div 
-      id={'tv_' + (symbol.includes(':') ? symbol : `BINANCE:${symbol}`).replace(/[^A-Z0-9:]/gi, '_')} 
-      ref={container} 
-      style={{ height }} 
-    />
+    <div>
+      {/* Time Interval Selector */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-white">Price Chart</h3>
+        <div className="flex gap-2">
+          {(['1D', '1W', '1M', '3M', '6M', '1Y'] as TimeInterval[]).map((interval) => (
+            <button
+              key={interval}
+              onClick={() => handleIntervalChange(interval)}
+              className={`px-3 py-1 text-sm rounded transition-colors ${
+                selectedInterval === interval
+                  ? 'bg-crypto-accent text-white'
+                  : 'bg-crypto-secondary/50 text-gray-300 hover:bg-crypto-secondary/70'
+              }`}
+            >
+              {interval}
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      {/* Chart Container */}
+      <div 
+        id={'tv_' + (symbol.includes(':') ? symbol : `BINANCE:${symbol}`).replace(/[^A-Z0-9:]/gi, '_')} 
+        ref={container} 
+        style={{ height }} 
+      />
+    </div>
   )
 }

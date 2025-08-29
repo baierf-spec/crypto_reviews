@@ -123,11 +123,14 @@ export default function PriceChart({ coinId, heightClass = 'h-64' }: PriceChartP
   }
 
   // Convert heightClass to numeric height for TradingViewChart
-  const height = heightClass === 'h-64' ? 256 : 
-                 heightClass === 'h-96' ? 384 : 
-                 heightClass === 'h-[300px]' ? 300 : 300
+  // Subtract some height for the interval selector UI
+  const baseHeight = heightClass === 'h-64' ? 256 : 
+                     heightClass === 'h-96' ? 384 : 
+                     heightClass === 'h-[300px]' ? 300 : 300
+  
+  const chartHeight = Math.max(200, baseHeight - 60) // Subtract space for interval selector
 
-  return <TradingViewChart symbol={symbol} height={height} />
+  return <TradingViewChart symbol={symbol} height={chartHeight} />
 }
 
 
