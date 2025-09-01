@@ -144,3 +144,5 @@ export default function SimpleChart({ coinId, heightClass = 'h-64' }: SimpleChar
 }
 
 
+
+

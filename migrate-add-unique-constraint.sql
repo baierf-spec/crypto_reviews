@@ -22,3 +22,5 @@ ALTER TABLE analyses ADD CONSTRAINT analyses_coin_id_unique UNIQUE (coin_id);
 SELECT constraint_name, constraint_type
 FROM information_schema.table_constraints
 WHERE table_name = 'analyses' AND constraint_name = 'analyses_coin_id_unique';
+
+
